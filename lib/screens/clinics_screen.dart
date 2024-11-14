@@ -1,5 +1,6 @@
+import 'package:contatudo/models/clinic.dart';
 import 'package:flutter/material.dart';
-import 'clinic_detail_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ClinicsScreen extends StatefulWidget {
   const ClinicsScreen({super.key});
@@ -9,11 +10,144 @@ class ClinicsScreen extends StatefulWidget {
 }
 
 class _ClinicsScreenState extends State<ClinicsScreen> {
-  final List<String> clinics = [
-    'Clínica São Paulo',
-    'Clínica Rio de Janeiro',
-    'Clínica Minas Gerais',
-  ];
+  late Future<List<Clinic>> clinics;
+
+  void initState() {
+    super.initState();
+    clinics = fetchClinics();
+  }
+
+  Future<List<Clinic>> fetchClinics() async {
+    print('ClinicsScreen::fetchClinics INI');
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+
+    if (userId == null) {
+      print('Usuário não autenticado.');
+      return [];
+    }
+
+    try {
+      final response = await supabase
+          .from('clinic')
+          .select()
+          .eq('user_id', userId); // Filtra as clínicas pelo ID do usuário
+
+      if (response == null || response.isEmpty) {
+        print('Resposta vazia.');
+        return [];
+      }
+
+      print('ClinicsScreen::fetchClinics END');
+      // Transforma a resposta em uma lista de objetos `Clinic`
+      return (response as List).map((clinicData) {
+        return Clinic.fromMap(clinicData as Map<String, dynamic>);
+      }).toList();
+    } catch (error, stackTrace) {
+      print('Erro: $error');
+      print('ClinicsScreen::fetchClinics - StackTrace: $stackTrace');
+      throw Exception('Erro ao buscar clínicas: $error');
+    }
+  }
+
+  void showAddClinicDialog() {
+    print('ClinicsScreen::showAddClinicDialog INI');
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController locationController = TextEditingController();
+    final TextEditingController defaultPayValueController =
+        TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Adicionar Nova Clínica'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: InputDecoration(labelText: 'Nome da Clínica'),
+                ),
+                TextField(
+                  controller: locationController,
+                  decoration: InputDecoration(labelText: 'Localização'),
+                ),
+                TextField(
+                  controller: defaultPayValueController,
+                  decoration:
+                      InputDecoration(labelText: 'Taxa por Defeito (%)'),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final name = nameController.text;
+                final location = locationController.text;
+                final defaultPayValue =
+                    double.tryParse(defaultPayValueController.text) ?? 0.0;
+
+                final supabase = Supabase.instance.client;
+                final userId = supabase.auth.currentUser?.id;
+
+                if (userId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro: Usuário não autenticado.')),
+                  );
+                  return;
+                }
+
+                try {
+                  final response = await supabase.from('clinic').insert({
+                    'user_id':
+                        userId, // Associa a clínica ao usuário autenticado
+                    'name': name,
+                    'location': location,
+                    'default_pay_value': defaultPayValue,
+                  }).select();
+
+                  if (response.isEmpty) {
+                    print(
+                        'ClinicsScreen::showAddClinicDialog - Nenhuma resposta recebida ao criar clínica.');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'Erro: Nenhuma resposta recebida ao criar clínica.')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Clínica criada com sucesso!')),
+                    );
+                    Navigator.pop(context);
+                    setState(() {
+                      clinics =
+                          fetchClinics(); // Atualiza a lista após inserção
+                    });
+                  }
+                } catch (error) {
+                  print('Error: $error');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Erro ao criar clínica: $error')),
+                  );
+                }
+
+                print('ClinicsScreen::showAddClinicDialog END');
+              },
+              child: Text('Adicionar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,22 +155,35 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       appBar: AppBar(
         title: Text('Clínicas'),
       ),
-      body: ListView.builder(
-        itemCount: clinics.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(clinics[index]),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      ClinicDetailScreen(clinicName: clinics[index]),
-                ),
-              );
-            },
-          );
+      body: FutureBuilder<List<Clinic>>(
+        future: clinics,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erro ao carregar clínicas.'));
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('Nenhuma clínica encontrada.'));
+          } else {
+            final clinics = snapshot.data!;
+            return ListView.builder(
+              itemCount: clinics.length,
+              itemBuilder: (context, index) {
+                final clinic = clinics[index];
+                return ListTile(
+                  title: Text(clinic.name),
+                  subtitle: Text(
+                    'Localização: ${clinic.location}\nTaxa por Defeito: ${clinic.defaultPayValue}%',
+                  ),
+                );
+              },
+            );
+          }
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: showAddClinicDialog,
+        child: Icon(Icons.add),
       ),
     );
   }
