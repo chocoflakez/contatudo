@@ -1,3 +1,4 @@
+import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -32,7 +33,7 @@ class LoginScreenState extends State<LoginScreen> {
         ));
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => ProfileScreen()),
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
         );
       }
 

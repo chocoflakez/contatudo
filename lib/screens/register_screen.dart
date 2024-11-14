@@ -1,3 +1,4 @@
+import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -32,24 +33,28 @@ class RegisterScreenState extends State<RegisterScreen> {
 
       // Verifica se o usuário foi criado com sucesso
       final User? user = response.user;
-      final Session? session = response.session;
       if (user != null) {
         final userId = user.id;
 
+        print('User ID (auth.uid): ${supabase.auth.currentUser?.id}');
+        print('User ID being inserted: $userId');
+        print(
+            'User email: ${user.email}, name: $fullName, phone: $phoneNumber');
+
         // Tenta inserir as informações do perfil do usuário na tabela `user`
         final insertResponse = await supabase.from('user').insert({
-          'id': userId, // Garante que o campo de ID está correto
+          'id': userId,
           'name': fullName,
           'phone': phoneNumber,
-        });
+          'email': email,
+        }).select();
 
-        // Verifica se houve erro na inserção usando hasError
-        if (insertResponse) {
-          print('Error: ${insertResponse}');
+        // Verifica se houve erro na inserção com base na presença de dados ou mensagem de erro
+        if (insertResponse == null || insertResponse.isEmpty) {
+          print('Error: Erro na inserção de dados.');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content:
-                  Text("Erro ao criar conta: ${insertResponse.error?.message}"),
+              content: Text("Erro ao criar conta: Erro na inserção de dados."),
             ),
           );
         } else {
@@ -57,7 +62,10 @@ class RegisterScreenState extends State<RegisterScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Conta criada com sucesso!")),
           );
-          Navigator.pop(context); // Retorna ao AuthScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => DashboardScreen()),
+          );
         }
       } else {
         print('Erro ao registrar o usuário.');
