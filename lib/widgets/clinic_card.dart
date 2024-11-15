@@ -19,7 +19,7 @@ class ClinicCard extends StatelessWidget {
     return Material(
       color: AppColors.cardColor, // Fundo branco
       elevation: 4,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -55,15 +55,10 @@ class ClinicCard extends StatelessWidget {
                 color: AppColors.secondaryText,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: onDetailsPressed,
-                  child: Text('Detalhes',
-                      style: TextStyle(color: AppColors.accentColor)),
-                ),
                 const SizedBox(width: 8),
                 TextButton(
                   onPressed: onEditPressed,
