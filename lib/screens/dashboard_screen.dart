@@ -234,14 +234,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
               MaterialPageRoute(builder: (context) => targetScreen),
             );
           },
-          child: CircleAvatar(
-            radius: 30,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(icon, size: 30, color: Colors.white),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.blueAccent
+                  .withOpacity(0.1), // Fundo azul claro com transparência
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.blueAccent, // Cor da borda azul
+                width: 2, // Largura da borda
+              ),
+            ),
+            child: CircleAvatar(
+              radius: 30,
+              backgroundColor:
+                  Colors.transparent, // Define o fundo como transparente
+              child: Icon(icon, size: 30, color: Colors.blueAccent),
+            ),
           ),
         ),
         const SizedBox(height: 8),
-        Text(label),
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors
+                .accentColor, // Usa a cor de destaque definida no AppConfig
+          ),
+        ),
       ],
     );
   }
@@ -253,11 +271,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         color: Colors
             .transparent, // Evita que a cor de fundo do Material afete o Container
         shadowColor: Colors.black.withOpacity(0.2), // Controla a sombra
-        borderRadius: BorderRadius.circular(8.0), // Arredonda as bordas
+        borderRadius: BorderRadius.circular(16.0), // Arredonda as bordas
         child: Container(
           decoration: BoxDecoration(
             color: AppColors.cardColor, // Garante que a cor seja branca
-            borderRadius: BorderRadius.circular(8.0), // Mesma borda do Material
+            borderRadius:
+                BorderRadius.circular(16.0), // Mesma borda do Material
           ),
           padding: const EdgeInsets.all(16.0),
           child: Column(
