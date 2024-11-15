@@ -1,3 +1,5 @@
+import 'package:contatudo/app_config.dart';
+import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -57,9 +59,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   Widget build(BuildContext context) {
     print('AddAppointmentScreen::build INI');
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Adicionar Nova Consulta'),
-      ),
+      appBar: MyMainAppBar(title: 'Adicionar Consulta'),
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
         child: Column(
