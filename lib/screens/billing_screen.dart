@@ -2,24 +2,24 @@ import 'package:contatudo/app_config.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 
-class MetricsScreen extends StatefulWidget {
-  const MetricsScreen({super.key});
+class BillingsScreen extends StatefulWidget {
+  const BillingsScreen({super.key});
 
   @override
-  State<MetricsScreen> createState() => _MetricsScreenState();
+  State<BillingsScreen> createState() => _BillingsScreenState();
 }
 
-class _MetricsScreenState extends State<MetricsScreen> {
+class _BillingsScreenState extends State<BillingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyMainAppBar(title: 'Métricas'),
+      appBar: MyMainAppBar(title: 'Faturação'),
       backgroundColor: AppColors.background,
       body: Center(
         child: Column(
           children: [
             Text(
-              'Métricas',
+              'Faturação',
               style: TextStyle(fontSize: 24),
             )
           ],

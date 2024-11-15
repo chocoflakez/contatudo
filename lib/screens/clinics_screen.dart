@@ -1,4 +1,7 @@
+import 'package:contatudo/app_config.dart';
 import 'package:contatudo/models/clinic.dart';
+import 'package:contatudo/widgets/clinic_card.dart';
+import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,6 +15,7 @@ class ClinicsScreen extends StatefulWidget {
 class _ClinicsScreenState extends State<ClinicsScreen> {
   late Future<List<Clinic>> clinics;
 
+  @override
   void initState() {
     super.initState();
     clinics = fetchClinics();
@@ -28,10 +32,8 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
     }
 
     try {
-      final response = await supabase
-          .from('clinic')
-          .select()
-          .eq('user_id', userId); // Filtra as clínicas pelo ID do usuário
+      final response =
+          await supabase.from('clinic').select().eq('user_id', userId);
 
       if (response == null || response.isEmpty) {
         print('Resposta vazia.');
@@ -39,7 +41,6 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       }
 
       print('ClinicsScreen::fetchClinics END');
-      // Transforma a resposta em uma lista de objetos `Clinic`
       return (response as List).map((clinicData) {
         return Clinic.fromMap(clinicData as Map<String, dynamic>);
       }).toList();
@@ -61,23 +62,24 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Adicionar Nova Clínica'),
+          title: const Text('Adicionar Nova Clínica'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  decoration: InputDecoration(labelText: 'Nome da Clínica'),
+                  decoration:
+                      const InputDecoration(labelText: 'Nome da Clínica'),
                 ),
                 TextField(
                   controller: locationController,
-                  decoration: InputDecoration(labelText: 'Localização'),
+                  decoration: const InputDecoration(labelText: 'Localização'),
                 ),
                 TextField(
                   controller: defaultPayValueController,
                   decoration:
-                      InputDecoration(labelText: 'Taxa por Defeito (%)'),
+                      const InputDecoration(labelText: 'Taxa por Defeito (%)'),
                   keyboardType: TextInputType.number,
                 ),
               ],
@@ -86,7 +88,7 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Cancelar'),
+              child: const Text('Cancelar'),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -100,15 +102,15 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
 
                 if (userId == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Erro: Usuário não autenticado.')),
+                    const SnackBar(
+                        content: Text('Erro: Usuário não autenticado.')),
                   );
                   return;
                 }
 
                 try {
                   final response = await supabase.from('clinic').insert({
-                    'user_id':
-                        userId, // Associa a clínica ao usuário autenticado
+                    'user_id': userId,
                     'name': name,
                     'location': location,
                     'default_pay_value': defaultPayValue,
@@ -118,18 +120,18 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
                     print(
                         'ClinicsScreen::showAddClinicDialog - Nenhuma resposta recebida ao criar clínica.');
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
+                      const SnackBar(
                           content: Text(
                               'Erro: Nenhuma resposta recebida ao criar clínica.')),
                     );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Clínica criada com sucesso!')),
+                      const SnackBar(
+                          content: Text('Clínica criada com sucesso!')),
                     );
                     Navigator.pop(context);
                     setState(() {
-                      clinics =
-                          fetchClinics(); // Atualiza a lista após inserção
+                      clinics = fetchClinics();
                     });
                   }
                 } catch (error) {
@@ -141,7 +143,7 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
 
                 print('ClinicsScreen::showAddClinicDialog END');
               },
-              child: Text('Adicionar'),
+              child: const Text('Adicionar'),
             ),
           ],
         );
@@ -152,28 +154,35 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Clínicas'),
-      ),
+      appBar: const MyMainAppBar(title: 'Clínicas'),
+      backgroundColor: AppColors.background,
       body: FutureBuilder<List<Clinic>>(
         future: clinics,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text('Erro ao carregar clínicas.'));
+            return const Center(child: Text('Erro ao carregar clínicas.'));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('Nenhuma clínica encontrada.'));
+            return const Center(child: Text('Nenhuma clínica encontrada.'));
           } else {
             final clinics = snapshot.data!;
             return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
               itemCount: clinics.length,
               itemBuilder: (context, index) {
                 final clinic = clinics[index];
-                return ListTile(
-                  title: Text(clinic.name),
-                  subtitle: Text(
-                    'Localização: ${clinic.location}\nTaxa por Defeito: ${clinic.defaultPayValue}%',
+                return Padding(
+                  padding: const EdgeInsets.only(
+                      bottom: 16.0), // Espaçamento entre os cartões
+                  child: ClinicCard(
+                    clinic: clinic,
+                    onDetailsPressed: () {
+                      // Adicione a lógica para ver detalhes
+                    },
+                    onEditPressed: () {
+                      // Adicione a lógica para editar a clínica
+                    },
                   ),
                 );
               },
@@ -183,7 +192,8 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddClinicDialog,
-        child: Icon(Icons.add),
+        backgroundColor: AppColors.accentColor,
+        child: const Icon(Icons.add),
       ),
     );
   }
