@@ -1,3 +1,7 @@
+import 'package:contatudo/app_config.dart';
+import 'package:contatudo/screens/billing_screen.dart';
+import 'package:contatudo/screens/metrics_screen.dart';
+import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -68,8 +72,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       for (var appointment in response) {
         final clinic = appointment['clinic'] as Map<String, dynamic>?;
         final clinicName = clinic?['name'] as String? ?? 'Desconhecida';
-        final price = appointment['price'] as double;
-        final extraCost = appointment['extra_cost'] as double? ?? 0.0;
+        final price = (appointment['price'] as num).toDouble();
+        final extraCost =
+            (appointment['extra_cost'] as num?)?.toDouble() ?? 0.0;
         final userPercentage = appointment['user_percentage'] as int? ?? 100;
         final appointmentDate = DateTime.parse(appointment['appointment_date']);
 
@@ -150,9 +155,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Dashboard"),
-      ),
+      appBar: const MyMainAppBar(title: 'Dashboard'),
+      backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,8 +171,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const AppointmentsScreen()),
                   myCircleButton(context, 'Clínicas', Icons.local_hospital,
                       const ClinicsScreen()),
+                  myCircleButton(context, 'Métricas', Icons.bar_chart,
+                      const MetricsScreen()),
                   myCircleButton(context, 'Faturação', Icons.attach_money,
-                      const AppointmentsScreen()),
+                      const BillingsScreen()),
                 ],
               ),
             ),
@@ -201,7 +207,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         'Total: ${totalFaturadoHoje.toStringAsFixed(2)}€\n'
                         'Líquido: ${totalLiquidoHoje.toStringAsFixed(2)}€',
                   ),
-                  SizedBox(width: 16),
+                  const SizedBox(width: 16),
                   myInfoCard(
                     'Este Mês',
                     'Consultas: $numeroConsultasMes\n'
@@ -242,9 +248,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget myInfoCard(String title, String content) {
     return Expanded(
-      child: Card(
-        elevation: 2,
-        child: Padding(
+      child: Material(
+        elevation: 4, // Aplica a elevação desejada
+        color: Colors
+            .transparent, // Evita que a cor de fundo do Material afete o Container
+        shadowColor: Colors.black.withOpacity(0.2), // Controla a sombra
+        borderRadius: BorderRadius.circular(8.0), // Arredonda as bordas
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.cardColor, // Garante que a cor seja branca
+            borderRadius: BorderRadius.circular(8.0), // Mesma borda do Material
+          ),
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,14 +266,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Text(
                 title,
                 style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue),
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.accentColor,
+                ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 content,
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.secondaryText,
+                ),
               ),
             ],
           ),
