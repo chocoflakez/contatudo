@@ -1,5 +1,7 @@
+import 'package:contatudo/app_config.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/profile_screen.dart';
+import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -49,9 +51,8 @@ class LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
+      appBar: MyMainAppBar(title: 'Login'),
+      backgroundColor: AppColors.background,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

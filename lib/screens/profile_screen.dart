@@ -1,3 +1,5 @@
+import 'package:contatudo/app_config.dart';
+import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -58,7 +60,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Profile")),
+      appBar: MyMainAppBar(title: 'Perfil'),
+      backgroundColor: AppColors.background,
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(
@@ -66,6 +69,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Text("Full Name: $fullName", style: TextStyle(fontSize: 18)),
             Text("Phone Number: $phoneNumber", style: TextStyle(fontSize: 18)),
+            Text("Email: ${Supabase.instance.client.auth.currentUser?.email}",
+                style: TextStyle(fontSize: 18)),
+            Text("User ID: ${Supabase.instance.client.auth.currentUser?.id}",
+                style: TextStyle(fontSize: 18)),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: signOut,
