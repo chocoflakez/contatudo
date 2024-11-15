@@ -4,6 +4,7 @@ class Appointment {
   final DateTime appointmentDate;
   final String description;
   final double price;
+  final String? clinicId; // ID da clínica adicionado
   final String? clinicName; // Nome da clínica
   final double? extraCost; // Custos extras
   final int? userPercentage; // Percentagem do usuário
@@ -14,6 +15,7 @@ class Appointment {
     required this.appointmentDate,
     required this.description,
     required this.price,
+    this.clinicId,
     this.clinicName,
     this.extraCost,
     this.userPercentage,
@@ -28,6 +30,7 @@ class Appointment {
       price: (map['price'] is int)
           ? (map['price'] as int).toDouble()
           : map['price']?.toDouble() ?? 0.0,
+      clinicId: map['clinic_id']?.toString(), // Adiciona o clinicId
       clinicName: map['clinic']?['name']?.toString(),
       extraCost: (map['extra_cost'] is int)
           ? (map['extra_cost'] as int).toDouble()
@@ -43,6 +46,7 @@ class Appointment {
       'appointment_date': appointmentDate.toIso8601String(),
       'description': description,
       'price': price,
+      'clinic_id': clinicId, // Inclui o clinicId no mapa
       'clinic_name': clinicName,
       'extra_cost': extraCost,
       'user_percentage': userPercentage,

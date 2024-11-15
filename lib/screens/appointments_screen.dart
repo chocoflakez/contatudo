@@ -23,10 +23,13 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
   @override
   void initState() {
     super.initState();
+    startDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
+    endDate = DateTime.now();
     appointments = fetchAppointments();
   }
 
   Future<List<Appointment>> fetchAppointments() async {
+    print('AppointmentsScreen::fetchAppointments INI');
     final supabase = Supabase.instance.client;
     final userId = supabase.auth.currentUser?.id;
 
@@ -47,15 +50,26 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
         query = query.lte('appointment_date', endDate!.toIso8601String());
       }
 
+      // Formata as datas para o formato "dd-MM-yyyy"
+      final formattedStartDate = startDate != null
+          ? DateFormat('dd-MM-yyyy').format(startDate!)
+          : 'N/A';
+      final formattedEndDate =
+          endDate != null ? DateFormat('dd-MM-yyyy').format(endDate!) : 'N/A';
+
+      print('startDate: $formattedStartDate, endDate: $formattedEndDate');
+
       final response = await query;
+
+      setState(() {
+        consultasEncontradas = response.length;
+      });
 
       if (response == null || response.isEmpty) {
         return [];
       }
 
-      setState(() {
-        consultasEncontradas = response.length;
-      });
+      print('AppointmentsScreen::fetchAppointments END');
 
       return (response as List).map((appointmentData) {
         return Appointment.fromMap(appointmentData as Map<String, dynamic>);
@@ -72,6 +86,19 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       locale: const Locale('pt', 'PT'),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.accentColor, // Cor da barra superior
+              onPrimary: Colors.white, // Cor do texto na barra superior
+              onSurface: AppColors.primaryText, // Cor do texto nos dias
+            ),
+            dialogBackgroundColor: AppColors.background, // Fundo do calendário
+          ),
+          child: child!,
+        );
+      },
     );
 
     if (pickedDate != null) {
@@ -107,12 +134,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                               vertical: 12.0, horizontal: 12.0),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.accentColor),
                           ),
                           child: Text(
                             startDate != null
-                                ? DateFormat('dd/MM/yyyy').format(startDate!)
+                                ? DateFormat('dd-MM-yyyy').format(startDate!)
                                 : 'Selecionar data',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -139,12 +166,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                               vertical: 12.0, horizontal: 12.0),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(color: AppColors.accentColor),
                           ),
                           child: Text(
                             endDate != null
-                                ? DateFormat('dd/MM/yyyy').format(endDate!)
+                                ? DateFormat('dd-MM-yyyy').format(endDate!)
                                 : 'Selecionar data',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -170,7 +197,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
               ],
             ),
           ),
-          const Divider(color: AppColors.accentColor),
+          const Divider(color: AppColors.secondaryText),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
             child: Align(
@@ -218,7 +245,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -230,7 +257,18 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           });
         },
         backgroundColor: AppColors.accentColor,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add, color: AppColors.cardColor),
+        label: const Text(
+          'Adicionar Consulta',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Ajusta a forma do botão
+        ),
+        elevation: 6, // Adiciona uma sombra mais pronunciada
       ),
     );
   }
