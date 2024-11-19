@@ -1,5 +1,6 @@
 import 'package:contatudo/app_config.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
+import 'package:contatudo/widgets/unavailable_functionality.dart';
 import 'package:flutter/material.dart';
 
 class MetricsScreen extends StatefulWidget {
@@ -12,18 +13,11 @@ class MetricsScreen extends StatefulWidget {
 class _MetricsScreenState extends State<MetricsScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       appBar: MyMainAppBar(title: 'Métricas'),
       backgroundColor: AppColors.background,
       body: Center(
-        child: Column(
-          children: [
-            Text(
-              'Métricas',
-              style: TextStyle(fontSize: 24),
-            )
-          ],
-        ),
+        child: MyUnavailableFunctionality(),
       ),
     );
   }
