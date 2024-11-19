@@ -54,7 +54,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           .gte('appointment_date', inicioDoMes.toIso8601String())
           .lte('appointment_date', hoje.toIso8601String());
 
-      if (response == null || response.isEmpty) {
+      if (response.isEmpty) {
         print('Resposta vazia. Nenhum dado encontrado.');
         return;
       }
@@ -155,7 +155,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const MyMainAppBar(title: 'Dashboard'),
+      appBar: const MyHomeAppBar(title: 'Dashboard'),
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Column(

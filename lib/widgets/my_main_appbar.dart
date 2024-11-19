@@ -12,7 +12,32 @@ class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       title: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
+          color: AppColors.primaryText,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      backgroundColor: AppColors.appBarColor,
+      centerTitle: true,
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+class MyHomeAppBar extends StatelessWidget implements PreferredSizeWidget {
+  final String title;
+
+  const MyHomeAppBar({Key? key, required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(
+        title,
+        style: const TextStyle(
           color: AppColors.primaryText,
           fontSize: 20,
           fontWeight: FontWeight.bold,
@@ -22,8 +47,11 @@ class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
       centerTitle: true,
       actions: [
         IconButton(
-          icon:
-              Icon(Icons.account_circle_outlined, color: AppColors.primaryText),
+          icon: CircleAvatar(
+            backgroundColor: AppColors.accentColor.withOpacity(0.1),
+            child: const Icon(Icons.account_circle_outlined,
+                color: AppColors.primaryText),
+          ),
           onPressed: () {
             Navigator.push(
               context,
@@ -36,5 +64,5 @@ class MyMainAppBar extends StatelessWidget implements PreferredSizeWidget {
   }
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
