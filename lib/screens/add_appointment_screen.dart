@@ -33,6 +33,8 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   void initState() {
     super.initState();
     fetchClinics();
+    appointmentDateController.text =
+        DateFormat('dd-MM-yyyy').format(DateTime.now());
   }
 
   void loadAppointmentData(Appointment appointment) {
@@ -202,32 +204,35 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                 children: [
                   Expanded(
                     child: Container(
+                      height: 60,
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.accentColor),
                       ),
-                      child: DropdownButton<Clinic>(
-                        value: selectedClinic,
-                        hint: const Text('Clínica'),
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        onChanged: (Clinic? newClinic) {
-                          setState(() {
-                            selectedClinic = newClinic;
-                            if (newClinic != null) {
-                              userPercentController.text =
-                                  newClinic.defaultPayValue.toString();
-                            }
-                          });
-                        },
-                        items: clinics.map((clinic) {
-                          return DropdownMenuItem<Clinic>(
-                            value: clinic,
-                            child: Text(clinic.name),
-                          );
-                        }).toList(),
+                      child: Center(
+                        child: DropdownButton<Clinic>(
+                          value: selectedClinic,
+                          hint: const Text('Clínica'),
+                          isExpanded: true,
+                          underline: const SizedBox(),
+                          onChanged: (Clinic? newClinic) {
+                            setState(() {
+                              selectedClinic = newClinic;
+                              if (newClinic != null) {
+                                userPercentController.text =
+                                    newClinic.defaultPayValue.toString();
+                              }
+                            });
+                          },
+                          items: clinics.map((clinic) {
+                            return DropdownMenuItem<Clinic>(
+                              value: clinic,
+                              child: Text(clinic.name),
+                            );
+                          }).toList(),
+                        ),
                       ),
                     ),
                   ),
