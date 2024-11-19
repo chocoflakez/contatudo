@@ -1,6 +1,6 @@
 import 'package:contatudo/main.dart';
-import 'package:contatudo/screens/auth_screen.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
+import 'package:contatudo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
           context, MaterialPageRoute(builder: (context) => DashboardScreen()));
     } else {
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => AuthScreen()));
+          context, MaterialPageRoute(builder: (context) => LoginScreen()));
     }
 
     print('SplashScreen::redirect END');

@@ -195,6 +195,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
               ),
             ),
+            Text(
+              'Bem-vindo!',
+              style: TextStyle(
+                fontSize: 16,
+                color: AppColors.primaryText,
+              ),
+            ),
             // Cartões com informações sobre as consultas
             Padding(
               padding: const EdgeInsets.all(16.0),

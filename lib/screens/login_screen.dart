@@ -1,6 +1,6 @@
 import 'package:contatudo/app_config.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
-import 'package:contatudo/screens/profile_screen.dart';
+import 'package:contatudo/screens/register_screen.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -9,12 +9,13 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool isPasswordVisible = false;
 
   Future<void> signIn() async {
     print('LoginScreen::signIn INI');
@@ -23,7 +24,6 @@ class LoginScreenState extends State<LoginScreen> {
     final supabase = Supabase.instance.client;
 
     try {
-      // Uso do método atualizado `signInWithPassword`
       final response = await supabase.auth.signInWithPassword(
         email: email,
         password: password,
@@ -31,7 +31,7 @@ class LoginScreenState extends State<LoginScreen> {
 
       if (response.user != null) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: const Text("Login realizado com sucesso!"),
+          content: Text("Login realizado com sucesso!"),
         ));
         Navigator.pushReplacement(
           context,
@@ -48,28 +48,144 @@ class LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    bool isRequired = false,
+    IconData? icon,
+    bool obscureText = false,
+    VoidCallback? toggleVisibility,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        obscureText: obscureText,
+        validator: (value) {
+          if (isRequired && (value == null || value.isEmpty)) {
+            return 'Por favor, preencha este campo';
+          }
+          if (keyboardType == TextInputType.number && value != null) {
+            final num? number = num.tryParse(value);
+            if (number == null) {
+              return 'Digite um valor numérico válido';
+            }
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppColors.secondaryText),
+          filled: true,
+          fillColor: Colors.white,
+          prefixIcon:
+              icon != null ? Icon(icon, color: AppColors.secondaryText) : null,
+          suffixIcon: toggleVisibility != null
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.secondaryText,
+                  ),
+                  onPressed: toggleVisibility,
+                )
+              : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide:
+                const BorderSide(color: AppColors.accentColor, width: 2),
+          ),
+        ),
+        style: const TextStyle(color: AppColors.primaryText),
+      ),
+    );
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyMainAppBar(title: 'Login'),
+      appBar: const MyMainAppBar(title: 'Login'),
       backgroundColor: AppColors.background,
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
+            Image.asset('assets/images/logo1.png', height: 100),
+            const SizedBox(height: 20),
+            buildTextField(
               controller: emailController,
-              decoration: const InputDecoration(labelText: "Email"),
+              label: 'Email',
+              isRequired: true,
+              icon: Icons.email,
             ),
-            TextField(
+            buildTextField(
               controller: passwordController,
-              decoration: const InputDecoration(labelText: "Password"),
-              obscureText: true,
+              label: 'Password',
+              isRequired: true,
+              icon: Icons.lock,
+              obscureText: !isPasswordVisible,
+              toggleVisibility: () {
+                setState(() {
+                  isPasswordVisible = !isPasswordVisible;
+                });
+              },
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: signIn,
-              child: const Text("Login"),
+            ElevatedButton.icon(
+              onPressed: () {
+                signIn();
+              },
+              icon: const Icon(
+                Icons.login,
+                color: Colors.white,
+              ),
+              label: const Text(
+                'Entrar',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: const Size(200, 56),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                elevation: 6,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  "Não tem uma conta?",
+                  style: TextStyle(color: AppColors.secondaryText),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Registe-se aqui",
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

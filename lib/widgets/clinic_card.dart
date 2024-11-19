@@ -62,7 +62,11 @@ class ClinicCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton.icon(
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    elevation: 4,
+                  ),
                   onPressed: onEditPressed,
                   icon: Icon(Icons.edit, color: AppColors.accentColor),
                   label: Text('Editar',
