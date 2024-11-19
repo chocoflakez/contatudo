@@ -187,6 +187,8 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
     final TextEditingController defaultPayValueController =
         TextEditingController(text: clinic.defaultPayValue.toString());
 
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -203,29 +205,32 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              buildTextField(
-                controller: nameController,
-                label: 'Nome da Clínica',
-                isRequired: true,
-                icon: Icons.local_hospital,
-              ),
-              buildTextField(
-                controller: locationController,
-                label: 'Localização',
-                isRequired: true,
-                icon: Icons.location_on,
-              ),
-              buildTextField(
-                controller: defaultPayValueController,
-                label: 'Percentagem por Defeito (%)',
-                keyboardType: TextInputType.number,
-                isRequired: true,
-                icon: Icons.percent,
-              ),
-            ],
+          content: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildTextField(
+                  controller: nameController,
+                  label: 'Nome da Clínica',
+                  isRequired: true,
+                  icon: Icons.local_hospital,
+                ),
+                buildTextField(
+                  controller: locationController,
+                  label: 'Localização',
+                  isRequired: false, // Localização continua opcional
+                  icon: Icons.location_on,
+                ),
+                buildTextField(
+                  controller: defaultPayValueController,
+                  label: 'Percentagem por Defeito (%)',
+                  keyboardType: TextInputType.number,
+                  isRequired: true,
+                  icon: Icons.percent,
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -249,60 +254,62 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
                 ],
               ),
               onPressed: () async {
-                final name = nameController.text;
-                final location = locationController.text;
-                final defaultPayValue =
-                    double.tryParse(defaultPayValueController.text) ?? 0.0;
+                if (_formKey.currentState!.validate()) {
+                  final name = nameController.text;
+                  final location = locationController.text;
+                  final defaultPayValue =
+                      double.tryParse(defaultPayValueController.text) ?? 0.0;
 
-                final supabase = Supabase.instance.client;
-                final userId = supabase.auth.currentUser?.id;
+                  final supabase = Supabase.instance.client;
+                  final userId = supabase.auth.currentUser?.id;
 
-                if (userId == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Erro: Usuário não autenticado.')),
-                  );
-                  return;
-                }
-
-                try {
-                  final response = await supabase
-                      .from('clinic')
-                      .update({
-                        'name': name,
-                        'location': location,
-                        'default_pay_value': defaultPayValue,
-                      })
-                      .eq('id', clinic.id)
-                      .select();
-
-                  if (response.isEmpty) {
-                    print(
-                        'ClinicsScreen::showEditClinicDialog - Nenhuma resposta recebida ao atualizar a clínica.');
+                  if (userId == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                          content: Text(
-                              'Erro: Nenhuma resposta recebida ao atualizar a clínica.')),
+                          content: Text('Erro: Usuário não autenticado.')),
                     );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Clínica atualizada com sucesso!')),
-                    );
-                    Navigator.pop(context);
-                    setState(() {
-                      clinics = fetchClinics();
-                    });
+                    return;
                   }
-                } catch (error) {
-                  print('Error: $error');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text('Erro ao atualizar clínica: $error')),
-                  );
-                }
 
-                print('ClinicsScreen::showEditClinicDialog END');
+                  try {
+                    final response = await supabase
+                        .from('clinic')
+                        .update({
+                          'name': name,
+                          'location': location,
+                          'default_pay_value': defaultPayValue,
+                        })
+                        .eq('id', clinic.id)
+                        .select();
+
+                    if (response.isEmpty) {
+                      print(
+                          'ClinicsScreen::showEditClinicDialog - Nenhuma resposta recebida ao atualizar a clínica.');
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Erro: Nenhuma resposta recebida ao atualizar a clínica.')),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text('Clínica atualizada com sucesso!')),
+                      );
+                      Navigator.pop(context);
+                      setState(() {
+                        clinics = fetchClinics();
+                      });
+                    }
+                  } catch (error) {
+                    print('Error: $error');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text('Erro ao atualizar clínica: $error')),
+                    );
+                  }
+
+                  print('ClinicsScreen::showEditClinicDialog END');
+                }
               },
             ),
           ],
