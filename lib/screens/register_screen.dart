@@ -17,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
+  bool isPasswordVisible = false;
 
   Future<void> signUp() async {
     print('RegisterScreen::signUp INI');
@@ -80,6 +81,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     bool isRequired = false,
     IconData? icon,
     bool obscureText = false,
+    VoidCallback? toggleVisibility,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -106,6 +108,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
           fillColor: Colors.white,
           prefixIcon:
               icon != null ? Icon(icon, color: AppColors.secondaryText) : null,
+          suffixIcon: toggleVisibility != null
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off : Icons.visibility,
+                    color: AppColors.secondaryText,
+                  ),
+                  onPressed: toggleVisibility,
+                )
+              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
             borderSide: BorderSide.none,
@@ -154,7 +165,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 label: 'Password',
                 isRequired: true,
                 icon: Icons.lock,
-                obscureText: true,
+                obscureText: !isPasswordVisible,
+                toggleVisibility: () {
+                  setState(() {
+                    isPasswordVisible = !isPasswordVisible;
+                  });
+                },
               ),
               buildTextField(
                 controller: phoneController,
