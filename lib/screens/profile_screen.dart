@@ -50,9 +50,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> signOut() async {
     print('ProfileScreen::signOut INI');
 
-    await Supabase.instance.client.auth.signOut();
-    Navigator.popUntil(
-        context, (route) => route.isFirst); // Retorna à AuthScreen
+    bool? confirmLogout = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmação'),
+          content: const Text('Tem certeza de que deseja sair?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton(
+              child: const Text('Logout'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentColor,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmLogout == true) {
+      await Supabase.instance.client.auth.signOut();
+      Navigator.popUntil(
+          context, (route) => route.isFirst); // Retorna à AuthScreen
+    }
 
     print('ProfileScreen::signOut END');
   }
@@ -73,10 +98,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontSize: 18)),
             Text("User ID: ${Supabase.instance.client.auth.currentUser?.id}",
                 style: TextStyle(fontSize: 18)),
-            SizedBox(height: 20),
-            ElevatedButton(
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
               onPressed: signOut,
-              child: Text("Logout"),
+              icon: const Icon(Icons.logout, color: Colors.white),
+              label:
+                  const Text('Logout', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: const Size(150, 50),
+              ),
             ),
           ],
         ),
