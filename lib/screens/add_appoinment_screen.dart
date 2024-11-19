@@ -122,8 +122,11 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Consulta atualizada com sucesso!')),
       );
-      Navigator.pop(
-          context, true); // Retorna true indicando que houve uma atualização
+
+      if (mounted) {
+        Navigator.pop(context,
+            true); // Certifica que o widget ainda está montado antes de tentar fechar
+      }
 
       print('AddAppointmentScreen::updateAppointment END');
     } catch (error) {
@@ -152,7 +155,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         'user_id': userId,
         'clinic_id': selectedClinic!.id,
         'patient_name': patientNameController.text,
-        'appointment_date': DateFormat('dd/MM/yyyy')
+        'appointment_date': DateFormat('dd-MM-yyyy')
             .parse(appointmentDateController.text)
             .toIso8601String(),
         'description': descriptionController.text,
@@ -336,6 +339,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     required String label,
     TextInputType keyboardType = TextInputType.text,
     bool isRequired = false,
+    IconData? icon, // Adicionado para incluir um ícone opcional
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -357,11 +361,18 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: AppColors.secondaryText),
-          border: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.accentColor),
+          filled: true,
+          fillColor: Colors.white,
+          prefixIcon:
+              icon != null ? Icon(icon, color: AppColors.secondaryText) : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0), // Borda arredondada
+            borderSide: BorderSide.none, // Remove a borda visível
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.accentColor, width: 2),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide:
+                const BorderSide(color: AppColors.accentColor, width: 2),
           ),
         ),
         style: const TextStyle(color: AppColors.primaryText),
@@ -374,6 +385,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     required TextEditingController controller,
     required String label,
     bool isRequired = false,
+    IconData icon = Icons.calendar_today, // Ícone de calendário por padrão
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -388,11 +400,17 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
         decoration: InputDecoration(
           labelText: label,
           labelStyle: const TextStyle(color: AppColors.secondaryText),
-          border: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.accentColor),
+          filled: true,
+          fillColor: Colors.white,
+          prefixIcon: Icon(icon, color: AppColors.secondaryText),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide: BorderSide.none,
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: AppColors.accentColor, width: 2),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide:
+                const BorderSide(color: AppColors.accentColor, width: 2),
           ),
         ),
         style: const TextStyle(color: AppColors.primaryText),
@@ -408,12 +426,11 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
               return Theme(
                 data: ThemeData.light().copyWith(
                   colorScheme: const ColorScheme.light(
-                    primary: AppColors.accentColor, // Cor da barra superior
-                    onPrimary: Colors.white, // Cor do texto na barra superior
-                    onSurface: AppColors.primaryText, // Cor do texto nos dias
+                    primary: AppColors.accentColor,
+                    onPrimary: Colors.white,
+                    onSurface: AppColors.primaryText,
                   ),
-                  dialogBackgroundColor:
-                      AppColors.background, // Fundo do calendário
+                  dialogBackgroundColor: AppColors.background,
                 ),
                 child: child!,
               );

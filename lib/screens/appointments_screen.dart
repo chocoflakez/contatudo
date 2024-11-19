@@ -11,10 +11,10 @@ class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({Key? key}) : super(key: key);
 
   @override
-  State<AppointmentsScreen> createState() => _AppointmentsScreenState();
+  State<AppointmentsScreen> createState() => AppointmentsScreenState();
 }
 
-class _AppointmentsScreenState extends State<AppointmentsScreen> {
+class AppointmentsScreenState extends State<AppointmentsScreen> {
   late Future<List<Appointment>> appointments;
   DateTime? startDate;
   DateTime? endDate;
@@ -77,6 +77,14 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     } catch (error) {
       throw Exception('Erro ao buscar consultas: $error');
     }
+  }
+
+  void refreshAppointments() {
+    print('AppointmentsScreen::refreshAppointments INI');
+    setState(() {
+      appointments = fetchAppointments();
+    });
+    print('AppointmentsScreen::refreshAppointments END');
   }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
@@ -234,8 +242,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       return Padding(
                         padding: const EdgeInsets.only(
                             bottom: 5.0), // Espaçamento entre cartões
-                        child:
-                            AppointmentCard(appointment: appointments[index]),
+                        child: AppointmentCard(
+                            appointment: appointments[index],
+                            onAppointmentUpdated:
+                                refreshAppointments //Callback para atualizar a lista
+                            ),
                       );
                     },
                   );
@@ -250,10 +261,11 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => AddAppointmentScreen()),
-          ).then((_) {
-            setState(() {
-              appointments = fetchAppointments();
-            });
+          ).then((result) {
+            if (result == true) {
+              // Chama a função para recarregar as consultas quando o retorno for verdadeiro
+              refreshAppointments();
+            }
           });
         },
         backgroundColor: AppColors.accentColor,

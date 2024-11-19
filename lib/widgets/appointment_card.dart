@@ -3,11 +3,15 @@ import 'package:contatudo/screens/add_appoinment_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/appointment.dart';
 import 'package:intl/intl.dart';
+import 'package:contatudo/screens/appointments_screen.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
+  final VoidCallback?
+      onAppointmentUpdated; // Callback para notificar atualizações
 
-  const AppointmentCard({Key? key, required this.appointment})
+  const AppointmentCard(
+      {Key? key, required this.appointment, this.onAppointmentUpdated})
       : super(key: key);
 
   @override
@@ -17,7 +21,9 @@ class AppointmentCard extends StatelessWidget {
       elevation: 2,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: () => showAppointmentDetailsDialog(context, appointment),
+        onTap: () {
+          showAppointmentDetailsDialog(context, appointment);
+        },
         borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -91,6 +97,7 @@ class AppointmentCard extends StatelessWidget {
 
   void showAppointmentDetailsDialog(
       BuildContext context, Appointment appointment) {
+    print('AppointmentCard::showAppointmentDetailsDialog INI');
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -168,9 +175,8 @@ class AppointmentCard extends StatelessWidget {
                   ),
                 ).then((result) {
                   if (result == true) {
-                    // A lógica para atualizar a lista na AppointmentsScreen deve estar implementada
-                    // para reagir a um retorno verdadeiro.
-                    // Pode ser um método que dispara o fetch novamente ou um `setState()`.
+                    onAppointmentUpdated
+                        ?.call(); // Chama o callback quando há uma atualização
                   }
                 });
               },
@@ -180,6 +186,7 @@ class AppointmentCard extends StatelessWidget {
         );
       },
     );
+    print('AppointmentCard::showAppointmentDetailsDialog END');
   }
 
   Widget buildDetailRow(String label, String value) {
