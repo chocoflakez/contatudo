@@ -3,7 +3,6 @@ import 'package:contatudo/screens/add_appoinment_screen.dart';
 import 'package:flutter/material.dart';
 import '../models/appointment.dart';
 import 'package:intl/intl.dart';
-import 'package:contatudo/screens/appointments_screen.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
@@ -43,14 +42,13 @@ class AppointmentCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      appointment.patientName,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.accentColor,
-                      ),
-                    ),
+                    Text(appointment.patientName,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.accentColor,
+                        ),
+                        softWrap: false),
                     Text(
                       '${appointment.clinicName ?? 'N/A'}',
                       style: const TextStyle(
@@ -82,6 +80,13 @@ class AppointmentCard extends StatelessWidget {
                       color: AppColors.primaryText,
                     ),
                   ),
+                  Text(
+                    '${appointment.getLiquidValue().toStringAsFixed(2)} €',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.secondaryText,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(width: 8), // Espaçamento entre a secção e a seta
@@ -102,10 +107,6 @@ class AppointmentCard extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: AppColors.cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
           title: Text(
             'Detalhes da Consulta',
             style: TextStyle(
@@ -113,6 +114,10 @@ class AppointmentCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: AppColors.accentColor,
             ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -159,9 +164,18 @@ class AppointmentCard extends StatelessWidget {
               },
               child: const Text('Fechar'),
             ),
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.accentColor,
+            ElevatedButton(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.edit,
+                      color: AppColors.accentColor, size: 20),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Editar',
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ],
               ),
               onPressed: () {
                 Navigator.of(context).pop(); // Fecha o dialog
@@ -180,7 +194,6 @@ class AppointmentCard extends StatelessWidget {
                   }
                 });
               },
-              child: const Text('Editar'),
             ),
           ],
         );

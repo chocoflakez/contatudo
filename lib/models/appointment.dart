@@ -7,7 +7,7 @@ class Appointment {
   final String? clinicId; // ID da clínica adicionado
   final String? clinicName; // Nome da clínica
   final double? extraCost; // Custos extras
-  final int? userPercentage; // Percentagem do usuário
+  final double? userPercentage; // Percentagem do usuário
 
   Appointment({
     required this.id,
@@ -35,7 +35,9 @@ class Appointment {
       extraCost: (map['extra_cost'] is int)
           ? (map['extra_cost'] as int).toDouble()
           : map['extra_cost']?.toDouble(),
-      userPercentage: map['user_percentage'] as int?,
+      userPercentage: (map['user_percentage'] is int)
+          ? (map['user_percentage'] as num).toDouble()
+          : map['user_percentage']?.toDouble(),
     );
   }
 
@@ -46,10 +48,22 @@ class Appointment {
       'appointment_date': appointmentDate.toIso8601String(),
       'description': description,
       'price': price,
-      'clinic_id': clinicId, // Inclui o clinicId no mapa
+      'clinic_id': clinicId,
       'clinic_name': clinicName,
       'extra_cost': extraCost,
       'user_percentage': userPercentage,
     };
+  }
+
+  double getLiquidValue() {
+    print('Appointment::getLiquidValue INI');
+
+    double liquidValue =
+        (price - (extraCost ?? 0)) * (userPercentage ?? 0) / 100;
+    print(
+        'price: $price, extraCost: $extraCost, userPercentage: $userPercentage => finalPrice: $liquidValue');
+
+    print('Appointment::getLiquidValue END');
+    return liquidValue;
   }
 }

@@ -18,7 +18,7 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
   late Future<List<Appointment>> appointments;
   DateTime? startDate;
   DateTime? endDate;
-  int consultasEncontradas = 0;
+  int appointmentsFoundCount = 0;
 
   @override
   void initState() {
@@ -38,17 +38,24 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
     }
 
     try {
+      // Inicializa a query com um tipo que aceite o encadeamento com .order()
       var query = supabase
           .from('appointment')
           .select('*, clinic(name)')
           .eq('user_id', userId);
 
+      // Aplica os filtros condicionais
       if (startDate != null) {
         query = query.gte('appointment_date', startDate!.toIso8601String());
       }
       if (endDate != null) {
         query = query.lte('appointment_date', endDate!.toIso8601String());
       }
+
+      // Aplica a ordenação diretamente no encadeamento
+      final response = await query
+          .order('appointment_date', ascending: false)
+          .order('created_at', ascending: false);
 
       // Formata as datas para o formato "dd-MM-yyyy"
       final formattedStartDate = startDate != null
@@ -59,13 +66,12 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
 
       print('startDate: $formattedStartDate, endDate: $formattedEndDate');
 
-      final response = await query;
-
       setState(() {
-        consultasEncontradas = response.length;
+        appointmentsFoundCount = response.length;
       });
 
-      if (response == null || response.isEmpty) {
+      if (response.isEmpty) {
+        print('AppointmentsScreen::fetchAppointments END');
         return [];
       }
 
@@ -211,7 +217,7 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Consultas encontradas: $consultasEncontradas',
+                'Consultas encontradas: $appointmentsFoundCount',
                 style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.secondaryText,
@@ -237,13 +243,18 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
                   return ListView.builder(
                     padding: const EdgeInsets.symmetric(
                         vertical: 8.0, horizontal: 8.0),
-                    itemCount: appointments.length,
+                    itemCount: appointments.length + 1,
                     itemBuilder: (context, index) {
+                      if (index == appointments.length) {
+                        return const SizedBox(height: 70);
+                      }
+
+                      final appoinment = appointments[index];
                       return Padding(
                         padding: const EdgeInsets.only(
                             bottom: 5.0), // Espaçamento entre cartões
                         child: AppointmentCard(
-                            appointment: appointments[index],
+                            appointment: appoinment,
                             onAppointmentUpdated:
                                 refreshAppointments //Callback para atualizar a lista
                             ),
