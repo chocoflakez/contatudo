@@ -49,6 +49,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> resetPassword() async {
+    print('LoginScreen::resetPassword INI');
     final email = emailController.text;
     final supabase = Supabase.instance.client;
 
@@ -65,10 +66,13 @@ class _LoginScreenState extends State<LoginScreen> {
         content: Text(
             "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
       ));
+
+      print('LoginScreen::resetPassword END');
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text("Erro ao enviar e-mail de recuperação: $error"),
       ));
+      print('LoginScreen::resetPassword END');
     }
   }
 

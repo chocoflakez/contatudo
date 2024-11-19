@@ -1,5 +1,5 @@
 import 'package:contatudo/app_config.dart';
-import 'package:contatudo/screens/add_appoinment_screen.dart';
+import 'package:contatudo/screens/add_appointment_screen.dart';
 import 'package:contatudo/widgets/appointment_card.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:intl/intl.dart';
