@@ -35,7 +35,7 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       final response =
           await supabase.from('clinic').select().eq('user_id', userId);
 
-      if (response == null || response.isEmpty) {
+      if (response.isEmpty) {
         print('Resposta vazia.');
         return [];
       }
@@ -74,38 +74,50 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16.0),
           ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                buildTextField(
-                  controller: nameController,
-                  label: 'Nome da Clínica',
-                  isRequired: true,
-                  icon: Icons.local_hospital,
-                ),
-                buildTextField(
-                  controller: locationController,
-                  label: 'Localização',
-                  isRequired: true,
-                  icon: Icons.location_on,
-                ),
-                buildTextField(
-                  controller: defaultPayValueController,
-                  label: 'Percentagem por Defeito (%)',
-                  keyboardType: TextInputType.number,
-                  isRequired: true,
-                  icon: Icons.percent,
-                ),
-              ],
-            ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildTextField(
+                controller: nameController,
+                label: 'Nome da Clínica',
+                isRequired: true,
+                icon: Icons.local_hospital,
+              ),
+              buildTextField(
+                controller: locationController,
+                label: 'Localização',
+                isRequired: true,
+                icon: Icons.location_on,
+              ),
+              buildTextField(
+                controller: defaultPayValueController,
+                label: 'Percentagem por Defeito (%)',
+                keyboardType: TextInputType.number,
+                isRequired: true,
+                icon: Icons.percent,
+              ),
+            ],
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.accentColor,
+              ),
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add, color: AppColors.accentColor, size: 20),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Adicionar',
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ],
+              ),
               onPressed: () async {
                 final name = nameController.text;
                 final location = locationController.text;
@@ -154,11 +166,11 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Erro ao criar clínica: $error')),
                   );
+                  print('ClinicsScreen::showAddClinicDialog END');
                 }
 
                 print('ClinicsScreen::showAddClinicDialog END');
               },
-              child: const Text('Adicionar'),
             ),
           ],
         );
@@ -184,8 +196,12 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
             final clinics = snapshot.data!;
             return ListView.builder(
               padding: const EdgeInsets.all(16.0),
-              itemCount: clinics.length,
+              itemCount: clinics.length + 1,
               itemBuilder: (context, index) {
+                if (index == clinics.length) {
+                  return const SizedBox(height: 50);
+                }
+
                 final clinic = clinics[index];
                 return Padding(
                   padding: const EdgeInsets.only(

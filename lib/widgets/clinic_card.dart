@@ -21,7 +21,7 @@ class ClinicCard extends StatelessWidget {
       elevation: 4,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -64,10 +64,10 @@ class ClinicCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                const SizedBox(width: 8),
-                TextButton(
+                TextButton.icon(
                   onPressed: onEditPressed,
-                  child: Text('Editar',
+                  icon: Icon(Icons.edit, color: AppColors.accentColor),
+                  label: Text('Editar',
                       style: TextStyle(color: AppColors.accentColor)),
                 ),
               ],

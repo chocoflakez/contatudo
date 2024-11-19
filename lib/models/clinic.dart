@@ -16,12 +16,13 @@ class Clinic {
   // Método para criar um objeto `Clinic` a partir de um Map
   factory Clinic.fromMap(Map<String, dynamic> map) {
     return Clinic(
-      id: map['id'].toString(), // Converte o ID para String, se necessário
+      id: map['id'].toString(),
       name: map['name'] ?? '',
       location: map['location'] ?? '',
-      userId: map['user_id']
-          .toString(), // Converte o userId para String, se necessário
-      defaultPayValue: (map['default_pay_value'] ?? 0).toDouble(),
+      userId: map['user_id'].toString(),
+      defaultPayValue: (map['default_pay_value'] is int)
+          ? (map['default_pay_value'] as int).toDouble()
+          : map['default_pay_value']?.toDouble() ?? 0.0,
     );
   }
 
