@@ -124,90 +124,95 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: MyMainAppBar(title: 'Registar'),
       backgroundColor: AppColors.background,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/logo1.png', height: 100),
-            const SizedBox(height: 20),
-            buildTextField(
-              controller: nameController,
-              label: 'Nome',
-              isRequired: true,
-              icon: Icons.person,
-            ),
-            buildTextField(
-              controller: emailController,
-              label: 'Email',
-              isRequired: true,
-              icon: Icons.email,
-            ),
-            buildTextField(
-              controller: passwordController,
-              label: 'Password',
-              isRequired: true,
-              icon: Icons.lock,
-              obscureText: true,
-            ),
-            buildTextField(
-              controller: phoneController,
-              label: 'Número de Telefone',
-              icon: Icons.phone,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () {
-                signUp();
-              },
-              icon: const Icon(
-                Icons.person_add,
-                color: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50),
+              const Text('Conta Tudo',
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              Image.asset('assets/images/logo1.png', height: 100),
+              const SizedBox(height: 20),
+              buildTextField(
+                controller: nameController,
+                label: 'Nome',
+                isRequired: true,
+                icon: Icons.person,
               ),
-              label: const Text(
-                'Registrar',
-                style: TextStyle(
-                  fontSize: 16,
+              buildTextField(
+                controller: emailController,
+                label: 'Email',
+                isRequired: true,
+                icon: Icons.email,
+              ),
+              buildTextField(
+                controller: passwordController,
+                label: 'Password',
+                isRequired: true,
+                icon: Icons.lock,
+                obscureText: true,
+              ),
+              buildTextField(
+                controller: phoneController,
+                label: 'Número de Telefone',
+                icon: Icons.phone,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: () {
+                  signUp();
+                },
+                icon: const Icon(
+                  Icons.person_add,
                   color: Colors.white,
                 ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentColor,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                minimumSize: const Size(200, 56),
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                elevation: 6,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text(
-                  "Já tem uma conta?",
-                  style: TextStyle(color: AppColors.secondaryText),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    "Faça login",
-                    style: TextStyle(color: AppColors.accentColor),
+                label: const Text(
+                  'Registrar',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
-              ],
-            ),
-          ],
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.accentColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  minimumSize: const Size(200, 56),
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  elevation: 6,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Já tem uma conta?",
+                    style: TextStyle(color: AppColors.secondaryText),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Faça login",
+                      style: TextStyle(color: AppColors.accentColor),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

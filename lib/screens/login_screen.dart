@@ -133,13 +133,18 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const MyMainAppBar(title: 'Login'),
       backgroundColor: AppColors.background,
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            const SizedBox(height: 50),
+            const Text(
+              'Conta Tudo',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 20),
             Image.asset('assets/images/logo1.png', height: 100),
             const SizedBox(height: 20),
             buildTextField(
