@@ -27,7 +27,12 @@ class ClinicCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.local_hospital, color: AppColors.accentColor),
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: AppColors.accentColor.withOpacity(0.1),
+                  child: Icon(Icons.local_hospital_rounded,
+                      color: AppColors.accentColor),
+                ),
                 const SizedBox(width: 8),
                 Text(
                   clinic.name,
@@ -49,7 +54,7 @@ class ClinicCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Taxa por Defeito: ${clinic.defaultPayValue.toStringAsFixed(2)}%',
+              'Percentagem (por defeito): ${clinic.defaultPayValue.toStringAsFixed(2)}%',
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.secondaryText,

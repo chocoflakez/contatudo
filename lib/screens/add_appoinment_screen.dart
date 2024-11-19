@@ -198,6 +198,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
             children: [
               // Primeira linha: Clínica e Data
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Container(

@@ -62,25 +62,40 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Adicionar Nova Clínica'),
+          title: const Text(
+            'Adicionar Nova Clínica',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(
+                buildTextField(
                   controller: nameController,
-                  decoration:
-                      const InputDecoration(labelText: 'Nome da Clínica'),
+                  label: 'Nome da Clínica',
+                  isRequired: true,
+                  icon: Icons.local_hospital,
                 ),
-                TextField(
+                buildTextField(
                   controller: locationController,
-                  decoration: const InputDecoration(labelText: 'Localização'),
+                  label: 'Localização',
+                  isRequired: true,
+                  icon: Icons.location_on,
                 ),
-                TextField(
+                buildTextField(
                   controller: defaultPayValueController,
-                  decoration:
-                      const InputDecoration(labelText: 'Taxa por Defeito (%)'),
+                  label: 'Percentagem por Defeito (%)',
                   keyboardType: TextInputType.number,
+                  isRequired: true,
+                  icon: Icons.percent,
                 ),
               ],
             ),
@@ -190,10 +205,69 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           }
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: showAddClinicDialog,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          showAddClinicDialog();
+        },
         backgroundColor: AppColors.accentColor,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add, color: AppColors.cardColor),
+        label: const Text(
+          'Clínica nova',
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.white,
+          ),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), // Ajusta a forma do botão
+        ),
+        elevation: 6, // Adiciona uma sombra mais pronunciada
+      ),
+    );
+  }
+
+  Widget buildTextField({
+    required TextEditingController controller,
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    bool isRequired = false,
+    IconData? icon, // Adicionado para incluir um ícone opcional
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        validator: (value) {
+          if (isRequired && (value == null || value.isEmpty)) {
+            return 'Por favor, preencha este campo';
+          }
+          if (keyboardType == TextInputType.number && value != null) {
+            final num? number = num.tryParse(value);
+            if (number == null) {
+              return 'Digite um valor numérico válido';
+            }
+          }
+          return null;
+        },
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: const TextStyle(color: AppColors.secondaryText),
+          filled: true,
+          fillColor: Colors.white,
+          prefixIcon:
+              icon != null ? Icon(icon, color: AppColors.secondaryText) : null,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0), // Borda arredondada
+            borderSide: BorderSide.none, // Remove a borda visível
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide:
+                const BorderSide(color: AppColors.accentColor, width: 2),
+          ),
+        ),
+        style: const TextStyle(color: AppColors.primaryText),
       ),
     );
   }
