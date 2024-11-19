@@ -48,6 +48,30 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> resetPassword() async {
+    final email = emailController.text;
+    final supabase = Supabase.instance.client;
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Por favor, insira seu e-mail para recuperação."),
+      ));
+      return;
+    }
+
+    try {
+      await supabase.auth.resetPasswordForEmail(email);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(
+            "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
+      ));
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Erro ao enviar e-mail de recuperação: $error"),
+      ));
+    }
+  }
+
   Widget buildTextField({
     required TextEditingController controller,
     required String label,
@@ -107,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const MyMainAppBar(title: 'Login'),
@@ -164,6 +187,13 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             const SizedBox(height: 10),
+            TextButton(
+              onPressed: resetPassword,
+              child: const Text(
+                "Esqueceu a senha?",
+                style: TextStyle(color: AppColors.accentColor),
+              ),
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
