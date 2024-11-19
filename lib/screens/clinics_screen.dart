@@ -178,6 +178,139 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
     );
   }
 
+  void showEditClinicDialog(Clinic clinic) {
+    print('ClinicsScreen::showEditClinicDialog INI');
+    final TextEditingController nameController =
+        TextEditingController(text: clinic.name);
+    final TextEditingController locationController =
+        TextEditingController(text: clinic.location);
+    final TextEditingController defaultPayValueController =
+        TextEditingController(text: clinic.defaultPayValue.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Editar Clínica',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              buildTextField(
+                controller: nameController,
+                label: 'Nome da Clínica',
+                isRequired: true,
+                icon: Icons.local_hospital,
+              ),
+              buildTextField(
+                controller: locationController,
+                label: 'Localização',
+                isRequired: true,
+                icon: Icons.location_on,
+              ),
+              buildTextField(
+                controller: defaultPayValueController,
+                label: 'Percentagem por Defeito (%)',
+                keyboardType: TextInputType.number,
+                isRequired: true,
+                icon: Icons.percent,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.accentColor,
+              ),
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.save,
+                      color: AppColors.accentColor, size: 20),
+                  const SizedBox(width: 4),
+                  const Text(
+                    'Salvar',
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ],
+              ),
+              onPressed: () async {
+                final name = nameController.text;
+                final location = locationController.text;
+                final defaultPayValue =
+                    double.tryParse(defaultPayValueController.text) ?? 0.0;
+
+                final supabase = Supabase.instance.client;
+                final userId = supabase.auth.currentUser?.id;
+
+                if (userId == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Erro: Usuário não autenticado.')),
+                  );
+                  return;
+                }
+
+                try {
+                  final response = await supabase
+                      .from('clinic')
+                      .update({
+                        'name': name,
+                        'location': location,
+                        'default_pay_value': defaultPayValue,
+                      })
+                      .eq('id', clinic.id)
+                      .select();
+
+                  if (response.isEmpty) {
+                    print(
+                        'ClinicsScreen::showEditClinicDialog - Nenhuma resposta recebida ao atualizar a clínica.');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                              'Erro: Nenhuma resposta recebida ao atualizar a clínica.')),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Clínica atualizada com sucesso!')),
+                    );
+                    Navigator.pop(context);
+                    setState(() {
+                      clinics = fetchClinics();
+                    });
+                  }
+                } catch (error) {
+                  print('Error: $error');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('Erro ao atualizar clínica: $error')),
+                  );
+                }
+
+                print('ClinicsScreen::showEditClinicDialog END');
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -208,11 +341,8 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
                       bottom: 16.0), // Espaçamento entre os cartões
                   child: ClinicCard(
                     clinic: clinic,
-                    onDetailsPressed: () {
-                      // Adicione a lógica para ver detalhes
-                    },
                     onEditPressed: () {
-                      // Adicione a lógica para editar a clínica
+                      showEditClinicDialog(clinic);
                     },
                   ),
                 );

@@ -4,13 +4,11 @@ import 'package:contatudo/models/clinic.dart';
 
 class ClinicCard extends StatelessWidget {
   final Clinic clinic;
-  final VoidCallback? onDetailsPressed;
   final VoidCallback? onEditPressed;
 
   const ClinicCard({
     Key? key,
     required this.clinic,
-    this.onDetailsPressed,
     this.onEditPressed,
   }) : super(key: key);
 
