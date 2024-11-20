@@ -269,16 +269,27 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddAppointmentScreen()),
-          ).then((result) {
-            if (result == true) {
-              // Chama a função para recarregar as consultas quando o retorno for verdadeiro
-              refreshAppointments();
-            }
+          appointments.then((resolvedAppointments) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => AddAppointmentScreen(
+                  lastAppointment: resolvedAppointments.isNotEmpty
+                      ? resolvedAppointments.first
+                      : null,
+                ),
+              ),
+            ).then((result) {
+              print(
+                  'Retorno de AddAppointmentScreen: $result'); // Log para verificar o retorno
+              if (result == true) {
+                print('Chamando refreshAppointments()');
+                refreshAppointments();
+              }
+            });
           });
         },
+
         backgroundColor: AppColors.accentColor,
         icon: const Icon(Icons.add, color: AppColors.cardColor),
         label: const Text(

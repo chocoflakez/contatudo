@@ -9,8 +9,13 @@ import '../models/clinic.dart';
 class AddAppointmentScreen extends StatefulWidget {
   final bool isEditing;
   final Appointment? existingAppointment;
+  final Appointment? lastAppointment;
 
-  AddAppointmentScreen({this.isEditing = false, this.existingAppointment});
+  AddAppointmentScreen({
+    this.isEditing = false,
+    this.existingAppointment,
+    this.lastAppointment,
+  });
 
   @override
   _AddAppointmentScreenState createState() => _AddAppointmentScreenState();
@@ -32,9 +37,9 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   @override
   void initState() {
     super.initState();
-    fetchClinics();
     appointmentDateController.text =
         DateFormat('dd-MM-yyyy').format(DateTime.now());
+    fetchClinics();
   }
 
   void loadAppointmentData(Appointment appointment) {
@@ -48,13 +53,17 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     extraCostController.text = (appointment.extraCost ?? 0.0).toString();
     hasExtraCost = (appointment.extraCost ?? 0.0) > 0;
 
-    // Verifica se a clínica existe na lista antes de atribuí-la
-    try {
-      selectedClinic = clinics.firstWhere(
-        (clinic) => clinic.id == appointment.clinicId,
-      );
-    } catch (e) {
-      selectedClinic = null; // Define como null se não for encontrada
+    if (clinics.isNotEmpty) {
+      try {
+        selectedClinic = clinics.firstWhere(
+          (clinic) => clinic.id == appointment.clinicId,
+          orElse: () => clinics.first,
+        );
+      } catch (e) {
+        selectedClinic = null;
+      }
+    } else {
+      selectedClinic = null;
     }
     print('AddAppointmentScreen::loadAppointmentData END');
   }
@@ -72,19 +81,34 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     try {
       final response =
           await supabase.from('clinic').select().eq('user_id', userId);
-
       setState(() {
         clinics = (response as List)
             .map((clinicData) =>
                 Clinic.fromMap(clinicData as Map<String, dynamic>))
             .toList();
+
+        // Configurar a clínica padrão com base no lastAppointment se existir
+        if (widget.lastAppointment != null &&
+            widget.lastAppointment!.clinicId != null) {
+          selectedClinic = clinics.firstWhere(
+            (clinic) => clinic.id == widget.lastAppointment!.clinicId,
+            orElse: () => clinics.isNotEmpty
+                ? clinics.first
+                : clinics.first, // substitua `null` por `clinics.first`
+          );
+        }
+
+        // Se não foi encontrada uma clínica correspondente ou não há lastAppointment, defina um fallback
+        if (selectedClinic == null && clinics.isNotEmpty) {
+          selectedClinic = clinics.first;
+        }
+
+        if (selectedClinic != null) {
+          userPercentController.text =
+              selectedClinic!.defaultPayValue.toString();
+        }
       });
       print('AddAppointmentScreen::fetchClinics END');
-
-      // Chama loadAppointmentData somente após carregar as clínicas
-      if (widget.isEditing && widget.existingAppointment != null) {
-        loadAppointmentData(widget.existingAppointment!);
-      }
     } catch (error) {
       print('Erro ao buscar clínicas: $error');
     }
@@ -162,7 +186,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
             .toIso8601String(),
         'description': descriptionController.text,
         'price': double.tryParse(priceController.text) ?? 0.0,
-        'user_percentage': double.tryParse(userPercentController.text) ?? 100,
+        'user_percentage': double.tryParse(userPercentController.text) ?? 100.0,
         'has_extra_cost': hasExtraCost,
         'extra_cost': hasExtraCost
             ? (double.tryParse(extraCostController.text) ?? 0.0)
