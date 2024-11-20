@@ -55,19 +55,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Confirmação'),
+          title: const Text(
+            'Confirmação',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
           content: const Text('Tem certeza de que deseja sair?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              child: const Text('Cancelar',
+                  style: TextStyle(color: AppColors.accentColor)),
               onPressed: () => Navigator.of(context).pop(false),
             ),
-            ElevatedButton(
-              child: const Text('Logout'),
+            ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.accentColor,
+                backgroundColor: Colors.white,
+                elevation: 4,
               ),
               onPressed: () => Navigator.of(context).pop(true),
+              icon: const Icon(Icons.logout, color: AppColors.accentColor),
+              label: const Text('Logout',
+                  style: TextStyle(color: AppColors.accentColor)),
             ),
           ],
         );
