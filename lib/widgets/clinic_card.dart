@@ -5,25 +5,28 @@ import 'package:contatudo/models/clinic.dart';
 class ClinicCard extends StatelessWidget {
   final Clinic clinic;
   final VoidCallback? onEditPressed;
+  final VoidCallback? onDeletePressed;
 
   const ClinicCard({
     Key? key,
     required this.clinic,
     this.onEditPressed,
+    this.onDeletePressed,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.cardColor, // Fundo branco
-      elevation: 4,
+      color: AppColors.cardColor,
+      elevation: 2,
       borderRadius: BorderRadius.circular(16),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(16), // Margens ajustadas
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircleAvatar(
                   radius: 24,
@@ -31,48 +34,77 @@ class ClinicCard extends StatelessWidget {
                   child: Icon(Icons.local_hospital_rounded,
                       color: AppColors.accentColor),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  clinic.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryText,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    clinic.name,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryText,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert,
+                      color: AppColors.secondaryText),
+                  color: AppColors.cardColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  onSelected: (value) {
+                    if (value == 'edit' && onEditPressed != null) {
+                      onEditPressed!();
+                    } else if (value == 'delete' && onDeletePressed != null) {
+                      onDeletePressed!();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: const [
+                          Icon(Icons.edit,
+                              color: AppColors.primaryText, size: 20),
+                          SizedBox(width: 8),
+                          Text('Editar',
+                              style: TextStyle(color: AppColors.primaryText)),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: const [
+                          Icon(Icons.delete,
+                              color: AppColors.primaryText, size: 20),
+                          SizedBox(width: 8),
+                          Text('Remover',
+                              style: TextStyle(color: AppColors.primaryText)),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Text(
-              'Localização: ${clinic.location}',
+              'Localização: ${clinic.location.isNotEmpty ? clinic.location : "Sem Localização"}',
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.secondaryText,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Text(
               'Percentagem (por defeito): ${clinic.defaultPayValue.toStringAsFixed(2)}%',
               style: TextStyle(
                 fontSize: 14,
                 color: AppColors.secondaryText,
               ),
-            ),
-            const SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    elevation: 4,
-                  ),
-                  onPressed: onEditPressed,
-                  icon: Icon(Icons.edit, color: AppColors.accentColor),
-                  label: Text('Editar',
-                      style: TextStyle(color: AppColors.accentColor)),
-                ),
-              ],
             ),
           ],
         ),

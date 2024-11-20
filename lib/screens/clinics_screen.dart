@@ -334,6 +334,72 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
     );
   }
 
+  Future<void> deleteClinic(String clinicId) async {
+    print('ClinicsScreen::deleteClinic INI');
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Confirmação',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          content: const Text(
+            'Tem a certeza que deseja remover esta clínica e as consultas associadas?',
+            style: TextStyle(fontSize: 14, color: AppColors.primaryText),
+          ),
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.accentColor,
+              ),
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 4,
+              ),
+              onPressed: () => Navigator.pop(context, true),
+              icon: Icon(Icons.delete, color: AppColors.accentColor),
+              label: const Text(
+                'Remover',
+                style: TextStyle(color: AppColors.accentColor),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      try {
+        final supabase = Supabase.instance.client;
+        await supabase.from('clinic').delete().eq('id', clinicId);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Clínica removida com sucesso!')),
+        );
+        setState(() {
+          clinics = fetchClinics(); // Atualiza a lista após a remoção
+        });
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erro ao remover clínica: $error')),
+        );
+      }
+    }
+    print('ClinicsScreen::deleteClinic END');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -360,12 +426,14 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
 
                 final clinic = clinics[index];
                 return Padding(
-                  padding: const EdgeInsets.only(
-                      bottom: 16.0), // Espaçamento entre os cartões
+                  padding: const EdgeInsets.only(bottom: 16.0),
                   child: ClinicCard(
                     clinic: clinic,
                     onEditPressed: () {
                       showEditClinicDialog(clinic);
+                    },
+                    onDeletePressed: () {
+                      deleteClinic(clinic.id);
                     },
                   ),
                 );
@@ -388,9 +456,9 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           ),
         ),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // Ajusta a forma do botão
+          borderRadius: BorderRadius.circular(16),
         ),
-        elevation: 6, // Adiciona uma sombra mais pronunciada
+        elevation: 6,
       ),
     );
   }
