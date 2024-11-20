@@ -5,7 +5,7 @@ import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/appointment.dart';
+import 'package:contatudo/models/appointment.dart';
 
 class AppointmentsScreen extends StatefulWidget {
   const AppointmentsScreen({Key? key}) : super(key: key);
@@ -103,12 +103,13 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: const ColorScheme.light(
               primary: AppColors.accentColor, // Cor da barra superior
               onPrimary: Colors.white, // Cor do texto na barra superior
               onSurface: AppColors.primaryText, // Cor do texto nos dias
             ),
-            dialogBackgroundColor: AppColors.background, // Fundo do calendário
+            dialogTheme: const DialogThemeData(
+                backgroundColor: AppColors.background), // Fundo do calendário
           ),
           child: child!,
         );
@@ -249,15 +250,15 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
                         return const SizedBox(height: 70);
                       }
 
-                      final appoinment = appointments[index];
+                      final appointment = appointments[index];
                       return Padding(
                         padding: const EdgeInsets.only(
                             bottom: 5.0), // Espaçamento entre cartões
                         child: AppointmentCard(
-                            appointment: appoinment,
-                            onAppointmentUpdated:
-                                refreshAppointments //Callback para atualizar a lista
-                            ),
+                          appointment: appointment,
+                          onAppointmentUpdated:
+                              refreshAppointments, //Callback para atualizar a lista
+                        ),
                       );
                     },
                   );

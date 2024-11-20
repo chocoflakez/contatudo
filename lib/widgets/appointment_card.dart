@@ -1,22 +1,24 @@
 import 'package:contatudo/app_config.dart';
 import 'package:contatudo/screens/add_appointment_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/appointment.dart';
 import 'package:intl/intl.dart';
 
 class AppointmentCard extends StatelessWidget {
   final Appointment appointment;
-  final VoidCallback?
-      onAppointmentUpdated; // Callback para notificar atualizações
+  final VoidCallback? onAppointmentUpdated;
 
-  const AppointmentCard(
-      {Key? key, required this.appointment, this.onAppointmentUpdated})
-      : super(key: key);
+  const AppointmentCard({
+    Key? key,
+    required this.appointment,
+    this.onAppointmentUpdated,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white, // Garante que o fundo do cartão seja branco
+      color: Colors.white,
       elevation: 2,
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
@@ -28,27 +30,26 @@ class AppointmentCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              // Primeira secção: ícone circular
               CircleAvatar(
                 radius: 24,
                 backgroundColor: AppColors.accentColor.withOpacity(0.1),
                 child: Icon(Icons.event_note, color: AppColors.accentColor),
               ),
-              const SizedBox(width: 16), // Espaçamento entre as secções
-
-              // Segunda secção: informação detalhada
+              const SizedBox(width: 16),
               Expanded(
                 flex: 2,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(appointment.patientName,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accentColor,
-                        ),
-                        softWrap: false),
+                    Text(
+                      appointment.patientName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.accentColor,
+                      ),
+                      softWrap: false,
+                    ),
                     Text(
                       '${appointment.clinicName ?? 'N/A'}',
                       style: const TextStyle(
@@ -66,9 +67,7 @@ class AppointmentCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 16), // Espaçamento entre as secções
-
-              // Terceira secção: valor destacado
+              const SizedBox(width: 16),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -89,10 +88,113 @@ class AppointmentCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(width: 8), // Espaçamento entre a secção e a seta
+              const SizedBox(width: 8),
+              PopupMenuButton<String>(
+                icon:
+                    const Icon(Icons.more_vert, color: AppColors.secondaryText),
+                color: AppColors.cardColor, // Fundo do menu alinhado com o tema
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(12), // Cantos arredondados
+                ),
+                onSelected: (value) async {
+                  if (value == 'edit') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AddAppointmentScreen(
+                          isEditing: true,
+                          existingAppointment: appointment,
+                        ),
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        onAppointmentUpdated?.call();
+                      }
+                    });
+                  } else if (value == 'delete') {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text(
+                            'Confirmação',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.accentColor,
+                            ),
+                          ),
+                          backgroundColor: AppColors.cardColor,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16.0),
+                          ),
+                          content: const Text(
+                            'Tem certeza que deseja remover esta consulta?',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.primaryText,
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.accentColor,
+                              ),
+                              onPressed: () => Navigator.pop(context, false),
+                              child: const Text('Cancelar'),
+                            ),
+                            ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                elevation: 4,
+                              ),
+                              onPressed: () => Navigator.pop(context, true),
+                              icon: Icon(Icons.delete,
+                                  color: AppColors.accentColor),
+                              label: const Text(
+                                'Remover',
+                                style: TextStyle(color: AppColors.accentColor),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    );
 
-              // Quarta secção: ícone de seta
-              Icon(Icons.arrow_forward_ios, color: AppColors.secondaryText),
+                    if (confirm == true) {
+                      await deleteAppointment(appointment.id);
+                      onAppointmentUpdated?.call(); // Atualiza a lista
+                    }
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: const [
+                        Icon(Icons.edit,
+                            color: AppColors.primaryText, size: 20),
+                        SizedBox(width: 8),
+                        Text('Editar',
+                            style: TextStyle(color: AppColors.primaryText)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: const [
+                        Icon(Icons.delete,
+                            color: AppColors.primaryText, size: 20),
+                        SizedBox(width: 8),
+                        Text('Remover',
+                            style: TextStyle(color: AppColors.primaryText)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
@@ -102,12 +204,11 @@ class AppointmentCard extends StatelessWidget {
 
   void showAppointmentDetailsDialog(
       BuildContext context, Appointment appointment) {
-    print('AppointmentCard::showAppointmentDetailsDialog INI');
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(
+          title: const Text(
             'Detalhes da Consulta',
             style: TextStyle(
               fontSize: 18,
@@ -156,50 +257,21 @@ class AppointmentCard extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.accentColor,
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'Fechar',
+                style: TextStyle(color: AppColors.accentColor),
               ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Fechar'),
-            ),
-            ElevatedButton(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.edit,
-                      color: AppColors.accentColor, size: 20),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'Editar',
-                    style: TextStyle(color: AppColors.accentColor),
-                  ),
-                ],
-              ),
-              onPressed: () {
-                Navigator.of(context).pop(); // Fecha o dialog
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => AddAppointmentScreen(
-                      isEditing: true,
-                      existingAppointment: appointment,
-                    ),
-                  ),
-                ).then((result) {
-                  if (result == true) {
-                    onAppointmentUpdated
-                        ?.call(); // Chama o callback quando há uma atualização
-                  }
-                });
-              },
             ),
           ],
         );
       },
     );
-    print('AppointmentCard::showAppointmentDetailsDialog END');
+  }
+
+  Future<void> deleteAppointment(String appointmentId) async {
+    final supabase = Supabase.instance.client;
+    await supabase.from('appointment').delete().eq('id', appointmentId);
   }
 
   Widget buildDetailRow(String label, String value) {
@@ -211,14 +283,14 @@ class AppointmentCard extends StatelessWidget {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.secondaryText, // Texto secundário
+            color: AppColors.secondaryText,
           ),
         ),
         Text(
           value,
           style: const TextStyle(
             fontSize: 14,
-            color: Colors.black, // Cor do valor
+            color: Colors.black,
           ),
         ),
       ],
