@@ -37,9 +37,17 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
   @override
   void initState() {
     super.initState();
+
+    // Configura o controlador de data com a data atual como padrão.
     appointmentDateController.text =
         DateFormat('dd-MM-yyyy').format(DateTime.now());
-    fetchClinics();
+
+    // Busca as clínicas e, se estiver em modo de edição, carrega os dados da consulta existente.
+    fetchClinics().then((_) {
+      if (widget.isEditing && widget.existingAppointment != null) {
+        loadAppointmentData(widget.existingAppointment!);
+      }
+    });
   }
 
   void loadAppointmentData(Appointment appointment) {
@@ -53,6 +61,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
     extraCostController.text = (appointment.extraCost ?? 0.0).toString();
     hasExtraCost = (appointment.extraCost ?? 0.0) > 0;
 
+    // Configura a clínica correspondente.
     if (clinics.isNotEmpty) {
       try {
         selectedClinic = clinics.firstWhere(
@@ -87,27 +96,27 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
                 Clinic.fromMap(clinicData as Map<String, dynamic>))
             .toList();
 
-        // Configurar a clínica padrão com base no lastAppointment se existir
+        // Define uma clínica padrão se houver clínicas carregadas.
+        if (clinics.isNotEmpty) {
+          selectedClinic = clinics.first;
+        }
+
+        // Caso uma última consulta exista, tenta configurar a clínica baseada nela.
         if (widget.lastAppointment != null &&
             widget.lastAppointment!.clinicId != null) {
           selectedClinic = clinics.firstWhere(
             (clinic) => clinic.id == widget.lastAppointment!.clinicId,
-            orElse: () => clinics.isNotEmpty
-                ? clinics.first
-                : clinics.first, // substitua `null` por `clinics.first`
+            orElse: () => clinics.first,
           );
         }
 
-        // Se não foi encontrada uma clínica correspondente ou não há lastAppointment, defina um fallback
-        if (selectedClinic == null && clinics.isNotEmpty) {
-          selectedClinic = clinics.first;
-        }
-
+        // Atualiza a percentagem de pagamento padrão.
         if (selectedClinic != null) {
           userPercentController.text =
               selectedClinic!.defaultPayValue.toString();
         }
       });
+
       print('AddAppointmentScreen::fetchClinics END');
     } catch (error) {
       print('Erro ao buscar clínicas: $error');

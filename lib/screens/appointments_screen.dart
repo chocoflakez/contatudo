@@ -93,10 +93,12 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
     print('AppointmentsScreen::refreshAppointments END');
   }
 
-  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final pickedDate = await showDatePicker(
+  Future<void> _selectDateRange(BuildContext context) async {
+    final pickedRange = await showDateRangePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDateRange: startDate != null && endDate != null
+          ? DateTimeRange(start: startDate!, end: endDate!)
+          : null,
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
       locale: const Locale('pt', 'PT'),
@@ -104,25 +106,21 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppColors.accentColor, // Cor da barra superior
-              onPrimary: Colors.white, // Cor do texto na barra superior
-              onSurface: AppColors.primaryText, // Cor do texto nos dias
+              primary: AppColors.accentColor,
+              onPrimary: Colors.white,
+              onSurface: AppColors.primaryText,
             ),
-            dialogTheme: const DialogThemeData(
-                backgroundColor: AppColors.background), // Fundo do calendário
+            dialogTheme: DialogThemeData(backgroundColor: AppColors.background),
           ),
           child: child!,
         );
       },
     );
 
-    if (pickedDate != null) {
+    if (pickedRange != null) {
       setState(() {
-        if (isStartDate) {
-          startDate = pickedDate;
-        } else {
-          endDate = pickedDate;
-        }
+        startDate = pickedRange.start;
+        endDate = pickedRange.end;
       });
     }
   }
@@ -136,80 +134,59 @@ class AppointmentsScreenState extends State<AppointmentsScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(context, true),
+            child: Container(
+              margin: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: AppColors.cardColor, // Fundo levemente escuro
+                borderRadius:
+                    BorderRadius.circular(24), // Borda mais arredondada
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 3), // Sombra sutil
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => _selectDateRange(context),
                     child: Row(
                       children: [
-                        const Text('De: ', style: TextStyle(fontSize: 14)),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12.0, horizontal: 12.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.accentColor),
-                          ),
-                          child: Text(
-                            startDate != null
-                                ? DateFormat('dd-MM-yyyy').format(startDate!)
-                                : 'Selecionar data',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: startDate != null
-                                  ? Colors.black
-                                  : AppColors.secondaryText,
-                            ),
+                        const Icon(Icons.calendar_month,
+                            color: AppColors.secondaryText),
+                        const SizedBox(width: 8),
+                        Text(
+                          startDate != null && endDate != null
+                              ? 'De: ${DateFormat('dd-MM-yyyy').format(startDate!)} até: ${DateFormat('dd-MM-yyyy').format(endDate!)}'
+                              : 'Selecionar intervalo de datas',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: startDate != null && endDate != null
+                                ? AppColors.primaryText
+                                : AppColors.secondaryText,
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _selectDate(context, false),
-                    child: Row(
-                      children: [
-                        const Text('Até: ', style: TextStyle(fontSize: 14)),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 12.0, horizontal: 12.0),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: AppColors.accentColor),
-                          ),
-                          child: Text(
-                            endDate != null
-                                ? DateFormat('dd-MM-yyyy').format(endDate!)
-                                : 'Selecionar data',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: endDate != null
-                                  ? Colors.black
-                                  : AppColors.secondaryText,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  const Spacer(),
+                  IconButton(
+                    icon: CircleAvatar(
+                        radius: 16,
+                        backgroundColor: AppColors.accentColor.withOpacity(0.1),
+                        child: const Icon(Icons.search,
+                            color: AppColors.accentColor)),
+                    onPressed: () {
+                      setState(() {
+                        appointments = fetchAppointments();
+                      });
+                    },
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search, color: AppColors.accentColor),
-                  onPressed: () {
-                    setState(() {
-                      appointments = fetchAppointments();
-                    });
-                  },
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const Divider(color: AppColors.secondaryText),
