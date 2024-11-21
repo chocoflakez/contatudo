@@ -12,22 +12,33 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final GlobalKey<FormState> _formKey =
+      GlobalKey<FormState>(); // Declarando o _formKey
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
   final TextEditingController nameController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
   bool isPasswordVisible = false;
+  int currentStep = 0;
 
   Future<void> signUp() async {
-    print('RegisterScreen::signUp INI');
-    final email = emailController.text;
-    final password = passwordController.text;
-    final fullName = nameController.text;
-    final phoneNumber = phoneController.text;
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final fullName = nameController.text.trim();
+    final phoneNumber = phoneController.text.trim();
 
-    final supabase = Supabase.instance.client;
+    if (email.isEmpty || password.isEmpty || fullName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Por favor, preencha todos os campos obrigatórios.")),
+      );
+      return;
+    }
 
     try {
+      final supabase = Supabase.instance.client;
       final AuthResponse response = await supabase.auth.signUp(
         email: email,
         password: password,
@@ -37,36 +48,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (user != null) {
         final userId = user.id;
 
-        final insertResponse = await supabase.from('user').insert({
+        await supabase.from('user').insert({
           'id': userId,
           'name': fullName,
           'phone': phoneNumber,
           'email': email,
-        }).select();
+        });
 
-        if (insertResponse.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Erro ao criar conta: Erro na inserção de dados."),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Conta criada com sucesso!")),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => DashboardScreen()),
-          );
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Conta criada com sucesso!")),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => DashboardScreen()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Erro ao registrar o usuário.")),
         );
       }
-      print('RegisterScreen::signUp END');
     } catch (error) {
-      print('Error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Erro ao criar conta: $error")),
       );
@@ -92,11 +93,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (isRequired && (value == null || value.isEmpty)) {
             return 'Por favor, preencha este campo';
           }
-          if (keyboardType == TextInputType.number && value != null) {
-            final num? number = num.tryParse(value);
-            if (number == null) {
-              return 'Digite um valor numérico válido';
-            }
+          if (controller == confirmPasswordController &&
+              passwordController.text != confirmPasswordController.text) {
+            return 'As senhas não correspondem';
           }
           return null;
         },
@@ -131,77 +130,144 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  Widget buildFirstStep() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          buildTextField(
+            controller: emailController,
+            label: 'Email',
+            isRequired: true,
+            icon: Icons.email,
+          ),
+          buildTextField(
+            controller: passwordController,
+            label: 'Password',
+            isRequired: true,
+            icon: Icons.lock,
+            obscureText: !isPasswordVisible,
+            toggleVisibility: () {
+              setState(() {
+                isPasswordVisible = !isPasswordVisible;
+              });
+            },
+          ),
+          buildTextField(
+            controller: confirmPasswordController,
+            label: 'Confirmar Password',
+            isRequired: true,
+            icon: Icons.lock,
+            obscureText: !isPasswordVisible,
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                setState(() {
+                  currentStep = 1;
+                });
+              }
+            },
+            icon: const Icon(Icons.arrow_forward, color: Colors.white),
+            label: const Text(
+              'Próximo',
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accentColor,
+              elevation: 6,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              minimumSize: const Size(140, 50),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSecondStep() {
+    return Column(
+      children: [
+        buildTextField(
+          controller: nameController,
+          label: 'Nome Completo',
+          isRequired: true,
+          icon: Icons.person,
+        ),
+        buildTextField(
+          controller: phoneController,
+          label: 'Número de Telefone',
+          isRequired: false,
+          icon: Icons.phone,
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () {
+                setState(() {
+                  currentStep = 0;
+                });
+              },
+              icon: const Icon(Icons.arrow_back, color: AppColors.accentColor),
+              label: const Text(
+                'Voltar',
+                style: TextStyle(color: AppColors.accentColor),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: const Size(140, 50),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: signUp,
+              icon: const Icon(Icons.person_add, color: Colors.white),
+              label: const Text(
+                'Registrar',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.accentColor,
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: const Size(140, 50),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 16),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 50),
-              const Text('Conta Tudo',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+              const Text(
+                'Conta Tudo',
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
               const SizedBox(height: 20),
               Image.asset('assets/images/logo1.png', height: 100),
               const SizedBox(height: 20),
-              buildTextField(
-                controller: nameController,
-                label: 'Nome',
-                isRequired: true,
-                icon: Icons.person,
-              ),
-              buildTextField(
-                controller: emailController,
-                label: 'Email',
-                isRequired: true,
-                icon: Icons.email,
-              ),
-              buildTextField(
-                controller: passwordController,
-                label: 'Password',
-                isRequired: true,
-                icon: Icons.lock,
-                obscureText: !isPasswordVisible,
-                toggleVisibility: () {
-                  setState(() {
-                    isPasswordVisible = !isPasswordVisible;
-                  });
-                },
-              ),
-              buildTextField(
-                controller: phoneController,
-                label: 'Número de Telefone',
-                icon: Icons.phone,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton.icon(
-                onPressed: () {
-                  signUp();
-                },
-                icon: const Icon(
-                  Icons.person_add,
-                  color: Colors.white,
-                ),
-                label: const Text(
-                  'Registrar',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.accentColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  minimumSize: const Size(200, 56),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  elevation: 6,
-                ),
-              ),
+              currentStep == 0 ? buildFirstStep() : buildSecondStep(),
               const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -215,8 +281,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
+                            builder: (context) => const LoginScreen()),
                       );
                     },
                     child: const Text(
