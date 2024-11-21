@@ -30,12 +30,12 @@ class AppointmentCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: AppColors.accentColor.withOpacity(0.1),
-                child: Icon(Icons.event_note, color: AppColors.accentColor),
-              ),
-              const SizedBox(width: 16),
+              // CircleAvatar(
+              //   radius: 24,
+              //   backgroundColor: AppColors.accentColor.withOpacity(0.1),
+              //   child: Icon(Icons.event_note, color: AppColors.accentColor),
+              // ),
+              // const SizedBox(width: 16),
               Expanded(
                 flex: 2,
                 child: Column(
