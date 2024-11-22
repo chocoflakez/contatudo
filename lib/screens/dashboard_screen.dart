@@ -7,7 +7,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'appointments_screen.dart';
 import 'clinics_screen.dart';
-import 'package:intl/intl.dart';
 import 'package:contatudo/widgets/goal_progress_card.dart';
 import 'package:contatudo/widgets/performance_indicators_card.dart';
 import 'package:contatudo/widgets/my_info_card.dart';
@@ -256,7 +255,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
 
       // Update related data
-      loadDashboardData();
+      await loadDashboardData();
 
       print('DashboardScreen::createGoal END');
     } catch (error) {
@@ -460,7 +459,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
 
       // Update related data
-      loadDashboardData();
+      await loadDashboardData();
 
       print('DashboardScreen::updateGoal END');
     } catch (error) {
@@ -480,7 +479,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       });
 
       // Update related data
-      loadDashboardData();
+      await loadDashboardData();
 
       print('DashboardScreen::deleteGoal END');
     } catch (error) {
