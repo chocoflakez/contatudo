@@ -111,12 +111,12 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.add, color: AppColors.accentColor, size: 20),
-                  const SizedBox(width: 4),
-                  const Text(
+                  Icon(Icons.add, color: AppColors.accentColor, size: 20),
+                  SizedBox(width: 4),
+                  Text(
                     'Adicionar',
                     style: TextStyle(color: AppColors.accentColor),
                   ),
@@ -257,13 +257,12 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
               child: const Text('Cancelar'),
             ),
             ElevatedButton(
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.save,
-                      color: AppColors.accentColor, size: 20),
-                  const SizedBox(width: 4),
-                  const Text(
+                  Icon(Icons.save, color: AppColors.accentColor, size: 20),
+                  SizedBox(width: 4),
+                  Text(
                     'Salvar',
                     style: TextStyle(color: AppColors.accentColor),
                   ),
@@ -370,7 +369,7 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
                 elevation: 4,
               ),
               onPressed: () => Navigator.pop(context, true),
-              icon: Icon(Icons.delete, color: AppColors.accentColor),
+              icon: const Icon(Icons.delete, color: AppColors.accentColor),
               label: const Text(
                 'Remover',
                 style: TextStyle(color: AppColors.accentColor),
@@ -495,8 +494,8 @@ class _ClinicsScreenState extends State<ClinicsScreen> {
           prefixIcon:
               icon != null ? Icon(icon, color: AppColors.secondaryText) : null,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12.0), // Borda arredondada
-            borderSide: BorderSide.none, // Remove a borda visível
+            borderRadius: BorderRadius.circular(12.0),
+            borderSide: BorderSide.none,
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12.0),
