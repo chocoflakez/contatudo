@@ -1,4 +1,5 @@
-import 'package:contatudo/main.dart';
+import 'package:contatudo/app_config.dart';
+import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
     print('SplashScreen::redirect INI');
     await Future.delayed(Duration(seconds: 0));
 
-    final session = supabase.auth.currentSession;
+    // Use AuthService to check the session
+    final session = AuthService.instance.currentSession();
 
     if (session != null) {
       Navigator.pushReplacement(
@@ -38,7 +40,9 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          color: AppColors.accentColor,
+        ),
       ),
     );
   }

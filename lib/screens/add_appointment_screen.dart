@@ -145,7 +145,7 @@ class _AddAppointmentScreenState extends State<AddAppointmentScreen> {
             .toIso8601String(),
         'description': descriptionController.text,
         'price': double.tryParse(priceController.text) ?? 0.0,
-        'user_percentage': int.tryParse(userPercentController.text) ?? 100,
+        'user_percentage': double.tryParse(userPercentController.text) ?? 100.0,
         'has_extra_cost': hasExtraCost,
         'extra_cost': hasExtraCost
             ? (double.tryParse(extraCostController.text) ?? 0.0)

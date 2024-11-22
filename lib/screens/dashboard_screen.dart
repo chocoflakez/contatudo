@@ -1,9 +1,9 @@
 import 'package:contatudo/app_config.dart';
+import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/screens/billing_screen.dart';
 import 'package:contatudo/screens/metrics_screen.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'appointments_screen.dart';
 import 'clinics_screen.dart';
@@ -21,22 +21,25 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
   String userId = "";
-  List<PieChartSectionData> sections = [];
+  bool isLoading =
+      true; // Flag to indicate if the data is being loaded from the database
+  // Dashboard data
   double totalFaturadoHoje = 0.0;
   double totalFaturadoMes = 0.0;
   double totalLiquidoHoje = 0.0;
   double totalLiquidoMes = 0.0;
   int numeroConsultasHoje = 0;
   int numeroConsultasMes = 0;
+  // Previous month data
   double faturamentoAnterior = 0.0;
   int consultasAnterior = 0;
+  // Goal data
   double goalCurrentValue = 0.0;
   double goalTargetValue = 0.0;
   int goalTypeId = 1;
-  Map<String, dynamic>? lastAppointment;
   bool hasGoal = false;
-  bool isLoading =
-      true; // Adicione uma variável de estado para controlar o carregamento
+  // Last appointment data
+  Map<String, dynamic>? lastAppointment;
 
   @override
   void initState() {
@@ -507,7 +510,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      'Bem-vindo, ${supabase.auth.currentUser!.email}!',
+                      'Bem-vindo, ${AuthService.instance.userName}!',
                       style: const TextStyle(
                         color: AppColors.primaryText,
                         fontSize: 20,
@@ -603,6 +606,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       showCreateGoalDialog: showCreateGoalDialog,
                     ),
                   ),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

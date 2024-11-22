@@ -3,6 +3,7 @@ import 'package:contatudo/screens/login_screen.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:contatudo/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   @override
@@ -48,8 +49,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Future<void> signOut() async {
-    print('ProfileScreen::signOut INI');
+  Future<void> confirmSignOut() async {
+    print('ProfileScreen::confirmSignOut INI');
 
     bool? confirmLogout = await showDialog<bool>(
       context: context,
@@ -90,15 +91,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmLogout == true) {
-      await Supabase.instance.client.auth.signOut();
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-        (Route<dynamic> route) => false,
-      );
+      final success = await AuthService.instance.signOut();
+      if (success) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro ao fazer logout.")),
+        );
+      }
     }
 
-    print('ProfileScreen::signOut END');
+    print('ProfileScreen::confirmSignOut END');
   }
 
   @override
@@ -119,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: signOut,
+              onPressed: confirmSignOut,
               icon: const Icon(Icons.logout, color: Colors.white),
               label:
                   const Text('Logout', style: TextStyle(color: Colors.white)),

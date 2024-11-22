@@ -1,8 +1,8 @@
 import 'package:contatudo/app_config.dart';
+import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -32,29 +32,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (email.isEmpty || password.isEmpty || fullName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text("Por favor, preencha todos os campos obrigatórios.")),
+          content: Text("Por favor, preencha todos os campos obrigatórios."),
+        ),
       );
       return;
     }
 
     try {
-      final supabase = Supabase.instance.client;
-      final AuthResponse response = await supabase.auth.signUp(
+      final success = await AuthService.instance.register(
         email: email,
         password: password,
-      );
-
-      final User? user = response.user;
-      if (user != null) {
-        final userId = user.id;
-
-        await supabase.from('user').insert({
-          'id': userId,
+        additionalData: {
           'name': fullName,
           'phone': phoneNumber,
-          'email': email,
-        });
+        },
+      );
 
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Conta criada com sucesso!")),
         );

@@ -1,8 +1,8 @@
 import 'package:contatudo/app_config.dart';
+import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/register_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,39 +18,37 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> signIn() async {
     print('LoginScreen::signIn INI');
-    final email = emailController.text;
-    final password = passwordController.text;
-    final supabase = Supabase.instance.client;
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-    try {
-      final response = await supabase.auth.signInWithPassword(
-        email: email,
-        password: password,
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Por favor, preencha todos os campos.")),
       );
+      return;
+    }
 
-      if (response.user != null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Login realizado com sucesso!"),
-        ));
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
-        );
-      }
+    final success = await AuthService.instance.login(email, password);
 
-      print('LoginScreen::signIn END');
-    } catch (error) {
-      print('Error: $error');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Erro ao fazer login: $error"),
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Login realizado com sucesso!"),
+      ));
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => DashboardScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text("Erro ao fazer login. Verifique suas credenciais."),
       ));
     }
+    print('LoginScreen::signIn END');
   }
 
   Future<void> resetPassword() async {
     print('LoginScreen::resetPassword INI');
-    final email = emailController.text;
-    final supabase = Supabase.instance.client;
+    final email = emailController.text.trim();
 
     if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -60,16 +58,23 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      await supabase.auth.resetPasswordForEmail(email);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text(
-            "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
-      ));
+      final success = await AuthService.instance.resetPassword(email);
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
+        ));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Erro ao enviar o e-mail de recuperação."),
+        ));
+      }
 
       print('LoginScreen::resetPassword END');
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Erro ao enviar e-mail de recuperação: $error"),
+        content: Text("Erro: $error"),
       ));
       print('LoginScreen::resetPassword END');
     }
@@ -170,9 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: () {
-                signIn();
-              },
+              onPressed: signIn,
               icon: const Icon(
                 Icons.login,
                 color: Colors.white,

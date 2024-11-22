@@ -34,6 +34,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: SplashScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
