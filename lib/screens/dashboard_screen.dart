@@ -8,6 +8,10 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'appointments_screen.dart';
 import 'clinics_screen.dart';
 import 'package:intl/intl.dart';
+import 'package:contatudo/widgets/goal_progress_card.dart';
+import 'package:contatudo/widgets/performance_indicators_card.dart';
+import 'package:contatudo/widgets/my_info_card.dart';
+import 'package:contatudo/widgets/my_circle_button.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -15,6 +19,8 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
+  final SupabaseClient supabase = Supabase.instance.client;
+  String userId = "";
   List<PieChartSectionData> sections = [];
   double totalFaturadoHoje = 0.0;
   double totalFaturadoMes = 0.0;
@@ -24,30 +30,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int numeroConsultasMes = 0;
   double faturamentoAnterior = 0.0;
   int consultasAnterior = 0;
+  double goalCurrentValue = 0.0;
+  double goalTargetValue = 0.0;
+  int goalTypeId = 1;
   Map<String, dynamic>? lastAppointment;
+  bool hasGoal = false;
+  bool isLoading =
+      true; // Adicione uma variável de estado para controlar o carregamento
 
   @override
   void initState() {
     super.initState();
-    fetchInitialData(); // Busca dados gerais
-    fetchLastAppointment(); // Busca a última consulta separadamente
-    fetchPreviousMonthData().then((previousMonthData) {
+    userId = supabase.auth.currentUser!.id;
+    loadDashboardData();
+  }
+
+  Future<void> loadDashboardData() async {
+    print('DashboardScreen::loadDashboardData INI');
+
+    // Update the state to reflect that the data is being loaded
+    setState(() {
+      isLoading = true;
+    });
+
+    // Update the state with the data loaded from the database
+    await fetchUserGoal(); // Update the goal data in first place
+    await fetchInitialData(); // Update the initial data
+    await fetchLastAppointment();
+    await fetchPreviousMonthData().then((previousMonthData) {
       setState(() {
         faturamentoAnterior = previousMonthData['faturamentoAnterior'];
         consultasAnterior = previousMonthData['consultasAnterior'];
       });
     });
+
+    setState(() {
+      isLoading = false;
+    });
+
+    print('DashboardScreen::loadDashboardData END');
   }
 
   Future<void> fetchInitialData() async {
     print('DashboardScreen::fetchInitialData INI');
-    final supabase = Supabase.instance.client;
-    final userId = supabase.auth.currentUser?.id;
-
-    if (userId == null) {
-      print('Usuário não autenticado.');
-      return;
-    }
 
     try {
       final inicioDoMes =
@@ -100,6 +125,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
         totalLiquidoMes = liquidoMes;
         numeroConsultasHoje = consultasHoje;
         numeroConsultasMes = consultasMes;
+        //Initial goal value is the total billed this month
+        goalCurrentValue = totalFaturadoMes;
       });
 
       print('DashboardScreen::fetchInitialData END');
@@ -111,10 +138,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> fetchLastAppointment() async {
     print('DashboardScreen::fetchLastAppointment INI');
-    final supabase = Supabase.instance.client;
-    final userId = supabase.auth.currentUser?.id;
-
-    if (userId == null) return;
 
     try {
       final response = await supabase
@@ -140,13 +163,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<Map<String, dynamic>> fetchPreviousMonthData() async {
     print('DashboardScreen::fetchPreviousMonthData INI');
-    final supabase = Supabase.instance.client;
-    final userId = supabase.auth.currentUser?.id;
-
-    if (userId == null) {
-      print('Usuário não autenticado.');
-      return {'faturamentoAnterior': 0.0, 'consultasAnterior': 0};
-    }
 
     try {
       final now = DateTime.now();
@@ -192,6 +208,282 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  Future<void> fetchUserGoal() async {
+    print('DashboardScreen::fetchUserGoal INI');
+
+    try {
+      final response = await supabase
+          .from('user_goal')
+          .select('goal_type_id, target_value')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (response != null) {
+        setState(() {
+          hasGoal = true;
+          goalTypeId = (response['goal_type_id'] as int);
+          goalTargetValue = (response['target_value'] as num).toDouble();
+        });
+      } else {
+        setState(() {
+          hasGoal = false;
+        });
+      }
+
+      print('DashboardScreen::fetchUserGoal END');
+    } catch (error) {
+      print('Erro ao buscar o objetivo: $error');
+      print('DashboardScreen::fetchUserGoal END');
+    }
+  }
+
+  Future<void> createGoal(int typeId, double targetValue) async {
+    print('DashboardScreen::createGoal INI');
+
+    try {
+      await supabase.from('user_goal').insert({
+        'user_id': userId,
+        'goal_type_id': typeId,
+        'target_value': targetValue,
+      });
+
+      // Update state to reflect the new goal
+      setState(() {
+        hasGoal = true;
+        goalTypeId = typeId;
+        goalTargetValue = targetValue;
+      });
+
+      // Update related data
+      loadDashboardData();
+
+      print('DashboardScreen::createGoal END');
+    } catch (error) {
+      print('Erro ao criar objetivo: $error');
+      print('DashboardScreen::createGoal END');
+    }
+  }
+
+  void showCreateGoalDialog() {
+    //final TextEditingController typeIdController = TextEditingController();
+    final TextEditingController targetValueController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Criar Objetivo",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Tipo de Objetivo: Faturação',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.primaryText,
+                  )),
+              const SizedBox(height: 12),
+              // TextField(
+              //   controller: typeIdController,
+              //   decoration: const InputDecoration(
+              //     labelText: "Tipo de Objetivo",
+              //     hintText: "Ex: Faturamento, Consultas",
+              //     border: OutlineInputBorder(),
+              //   ),
+              // ),
+              // const SizedBox(height: 12),
+              TextFormField(
+                controller: targetValueController,
+                decoration: InputDecoration(
+                  labelText: "Valor Alvo",
+                  hintText: "1000",
+                  labelStyle: const TextStyle(color: AppColors.secondaryText),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon:
+                      const Icon(Icons.euro, color: AppColors.secondaryText),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                    borderSide: const BorderSide(
+                        color: AppColors.accentColor, width: 2),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: AppColors.secondaryText),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                //final typeId = typeIdController.text;
+                final targetValue =
+                    double.tryParse(targetValueController.text) ?? 0.0;
+
+                createGoal(1, targetValue);
+
+                Navigator.pop(context);
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.add, color: AppColors.accentColor, size: 20),
+                  SizedBox(width: 4),
+                  Text(
+                    'Criar',
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showEditGoalDialog() {
+    final TextEditingController targetValueController =
+        TextEditingController(text: goalTargetValue.toStringAsFixed(2));
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text(
+            "Editar Objetivo",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          content: TextFormField(
+            controller: targetValueController,
+            decoration: InputDecoration(
+              labelText: "Novo Valor Alvo",
+              hintText: "1000",
+              labelStyle: const TextStyle(color: AppColors.secondaryText),
+              filled: true,
+              fillColor: Colors.white,
+              prefixIcon:
+                  const Icon(Icons.euro, color: AppColors.secondaryText),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide:
+                    const BorderSide(color: AppColors.accentColor, width: 2),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: AppColors.secondaryText),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final targetValue =
+                    double.tryParse(targetValueController.text) ??
+                        goalTargetValue;
+                await updateGoal(targetValue);
+                Navigator.pop(context);
+              },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, color: AppColors.accentColor, size: 20),
+                  SizedBox(width: 4),
+                  Text(
+                    'Salvar',
+                    style: TextStyle(color: AppColors.accentColor),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> updateGoal(double targetValue) async {
+    print('DashboardScreen::updateGoal INI');
+
+    try {
+      await supabase
+          .from('user_goal')
+          .update({'target_value': targetValue}).eq('user_id', userId);
+
+      setState(() {
+        goalTargetValue = targetValue;
+      });
+
+      // Update related data
+      loadDashboardData();
+
+      print('DashboardScreen::updateGoal END');
+    } catch (error) {
+      print('Erro ao atualizar objetivo: $error');
+    }
+  }
+
+  Future<void> deleteGoal() async {
+    print('DashboardScreen::deleteGoal INI');
+
+    try {
+      await supabase.from('user_goal').delete().eq('user_id', userId);
+
+      setState(() {
+        hasGoal = false;
+        goalTargetValue = 0.0;
+      });
+
+      // Update related data
+      loadDashboardData();
+
+      print('DashboardScreen::deleteGoal END');
+    } catch (error) {
+      print('Erro ao apagar objetivo: $error');
+      print('DashboardScreen::deleteGoal END');
+    }
+  }
+
   double calcularValorLiquido(
       double price, double extraCost, int userPercentage) {
     return (price - extraCost) * (userPercentage / 100);
@@ -226,9 +518,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Última consulta',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: AppColors.accentColor,
@@ -286,264 +578,119 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget myCircleButton(
-      BuildContext context, String label, IconData icon, Widget targetScreen) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => targetScreen),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.cardColor,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.accentColor, width: 1.5),
-            ),
-            child: CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.transparent,
-              child: Icon(icon, size: 30, color: AppColors.accentColor),
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.accentColor,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget myInfoCard(String title, String content) {
-    return Expanded(
-      child: Material(
-        elevation: 4,
-        color: Colors.transparent,
-        shadowColor: Colors.black.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: AppColors.cardColor,
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.accentColor,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                content,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: AppColors.secondaryText,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget performanceIndicatorsCard(double faturamentoAtual,
-      double faturamentoAnterior, int consultasAtual, int consultasAnterior) {
-    final faturamentoVariacao = faturamentoAnterior != 0
-        ? ((faturamentoAtual - faturamentoAnterior) / faturamentoAnterior) * 100
-        : 100;
-    final consultasVariacao = consultasAnterior != 0
-        ? consultasAtual - consultasAnterior
-        : consultasAtual;
-
-    final faturamentoIcon =
-        faturamentoVariacao >= 0 ? Icons.arrow_upward : Icons.arrow_downward;
-    final consultasIcon =
-        consultasVariacao >= 0 ? Icons.arrow_upward : Icons.arrow_downward;
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.accentColor.withOpacity(0.1),
-              child: const Icon(Icons.insights, color: AppColors.accentColor),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Text(
-                        "Indicadores de Performance",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.accentColor,
-                        ),
-                      ),
-                      SizedBox(width: 8),
-                      Tooltip(
-                        message:
-                            "Comparação entre o mês atual e o mês anterior.",
-                        child: Icon(Icons.info_outline,
-                            size: 18, color: AppColors.secondaryText),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(faturamentoIcon,
-                          color: faturamentoVariacao >= 0
-                              ? Colors.green
-                              : Colors.red),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Faturação: ${faturamentoVariacao.toStringAsFixed(2)} %",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: faturamentoVariacao >= 0
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(consultasIcon,
-                          color: consultasVariacao >= 0
-                              ? Colors.green
-                              : Colors.red),
-                      const SizedBox(width: 4),
-                      Text(
-                        "Consultas: ${consultasVariacao >= 0 ? '+ ' : ''}$consultasVariacao",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: consultasVariacao >= 0
-                              ? Colors.green
-                              : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const MyHomeAppBar(title: 'Dashboard'),
       backgroundColor: AppColors.background,
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Botões circulares
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  myCircleButton(context, 'Consultas', Icons.event_note,
-                      const AppointmentsScreen()),
-                  myCircleButton(context, 'Clínicas', Icons.local_hospital,
-                      const ClinicsScreen()),
-                  myCircleButton(context, 'Métricas', Icons.bar_chart,
-                      const MetricsScreen()),
-                  myCircleButton(context, 'Faturação', Icons.attach_money,
-                      const BillingsScreen()),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      'Bem-vindo, ${supabase.auth.currentUser!.email}!',
+                      style: const TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  // Botões circulares
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        myCircleButton(context, 'Consultas', Icons.event_note,
+                            const AppointmentsScreen()),
+                        myCircleButton(context, 'Clínicas',
+                            Icons.local_hospital, const ClinicsScreen()),
+                        myCircleButton(context, 'Métricas', Icons.bar_chart,
+                            const MetricsScreen()),
+                        myCircleButton(context, 'Faturação', Icons.attach_money,
+                            const BillingsScreen()),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'Resumo:',
+                      style: TextStyle(
+                        color: AppColors.primaryText,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  //Card: Today and this month
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        myInfoCard(
+                          'Hoje',
+                          'Consultas: $numeroConsultasHoje\n'
+                              'Total: ${totalFaturadoHoje.toStringAsFixed(2)} €\n'
+                              'Líquido: ${totalLiquidoHoje.toStringAsFixed(2)} €',
+                        ),
+                        const SizedBox(width: 16),
+                        myInfoCard(
+                          'Este Mês',
+                          'Consultas: $numeroConsultasMes\n'
+                              'Total: ${totalFaturadoMes.toStringAsFixed(2)} €\n'
+                              'Líquido: ${totalLiquidoMes.toStringAsFixed(2)} €',
+                        ),
+                      ],
+                    ),
+                  ),
+                  //Card: Last appointment
+                  if (lastAppointment != null)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0, vertical: 4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          lastAppointmentCard(lastAppointment!),
+                        ],
+                      ),
+                    ),
+                  //Card: Performance indicators (comparison between current and previous month)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 4),
+                    child: PerformanceIndicatorsCard(
+                      faturamentoAtual: totalFaturadoMes,
+                      faturamentoAnterior: faturamentoAnterior,
+                      consultasAtual: numeroConsultasMes,
+                      consultasAnterior: consultasAnterior,
+                    ),
+                  ),
+                  //Card: Goal progress
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 4),
+                    child: GoalProgressCard(
+                      hasGoal: hasGoal,
+                      goalCurrentValue: goalCurrentValue,
+                      goalTargetValue: goalTargetValue,
+                      showEditGoalDialog: showEditGoalDialog,
+                      deleteGoal: deleteGoal,
+                      showCreateGoalDialog: showCreateGoalDialog,
+                    ),
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            // Cartões de informações
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Resumo:',
-                style: TextStyle(
-                  color: AppColors.primaryText,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  myInfoCard(
-                    'Hoje',
-                    'Consultas: $numeroConsultasHoje\n'
-                        'Total: ${totalFaturadoHoje.toStringAsFixed(2)} €\n'
-                        'Líquido: ${totalLiquidoHoje.toStringAsFixed(2)} €',
-                  ),
-                  const SizedBox(width: 16),
-                  myInfoCard(
-                    'Este Mês',
-                    'Consultas: $numeroConsultasMes\n'
-                        'Total: ${totalFaturadoMes.toStringAsFixed(2)} €\n'
-                        'Líquido: ${totalLiquidoMes.toStringAsFixed(2)} €',
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Última consulta
-            if (lastAppointment != null)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    lastAppointmentCard(lastAppointment!),
-                  ],
-                ),
-              ),
-            //Comparação meses
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: performanceIndicatorsCard(
-                totalFaturadoMes,
-                faturamentoAnterior,
-                numeroConsultasMes,
-                consultasAnterior,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

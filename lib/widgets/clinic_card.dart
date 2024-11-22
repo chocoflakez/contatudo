@@ -67,10 +67,9 @@ class ClinicCard extends StatelessWidget {
                       child: Row(
                         children: const [
                           Icon(Icons.edit,
-                              color: AppColors.primaryText, size: 20),
+                              color: AppColors.accentColor, size: 20),
                           SizedBox(width: 8),
-                          Text('Editar',
-                              style: TextStyle(color: AppColors.primaryText)),
+                          Text('Editar'),
                         ],
                       ),
                     ),
@@ -79,10 +78,9 @@ class ClinicCard extends StatelessWidget {
                       child: Row(
                         children: const [
                           Icon(Icons.delete,
-                              color: AppColors.primaryText, size: 20),
+                              color: AppColors.accentColor, size: 20),
                           SizedBox(width: 8),
-                          Text('Remover',
-                              style: TextStyle(color: AppColors.primaryText)),
+                          Text('Remover'),
                         ],
                       ),
                     ),

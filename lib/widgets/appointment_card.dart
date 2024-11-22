@@ -150,7 +150,7 @@ class AppointmentCard extends StatelessWidget {
                                 elevation: 4,
                               ),
                               onPressed: () => Navigator.pop(context, true),
-                              icon: Icon(Icons.delete,
+                              icon: const Icon(Icons.delete,
                                   color: AppColors.accentColor),
                               label: const Text(
                                 'Remover',
@@ -169,27 +169,25 @@ class AppointmentCard extends StatelessWidget {
                   }
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'edit',
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.edit,
-                            color: AppColors.primaryText, size: 20),
+                            color: AppColors.accentColor, size: 20),
                         SizedBox(width: 8),
-                        Text('Editar',
-                            style: TextStyle(color: AppColors.primaryText)),
+                        Text('Editar'),
                       ],
                     ),
                   ),
-                  PopupMenuItem(
+                  const PopupMenuItem(
                     value: 'delete',
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.delete,
-                            color: AppColors.primaryText, size: 20),
+                            color: AppColors.accentColor, size: 20),
                         SizedBox(width: 8),
-                        Text('Remover',
-                            style: TextStyle(color: AppColors.primaryText)),
+                        Text('Remover'),
                       ],
                     ),
                   ),
@@ -280,7 +278,7 @@ class AppointmentCard extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.secondaryText,

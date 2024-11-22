@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> redirect() async {
     print('SplashScreen::redirect INI');
-    await Future.delayed(Duration(seconds: 2));
+    await Future.delayed(Duration(seconds: 0));
 
     final session = supabase.auth.currentSession;
 
