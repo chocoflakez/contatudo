@@ -12,6 +12,7 @@ import 'package:contatudo/widgets/goal_progress_card.dart';
 import 'package:contatudo/widgets/performance_indicators_card.dart';
 import 'package:contatudo/widgets/my_info_card.dart';
 import 'package:contatudo/widgets/my_circle_button.dart';
+import 'package:contatudo/widgets/last_appointment_card.dart';
 
 class DashboardScreen extends StatefulWidget {
   @override
@@ -445,10 +446,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Future<void> updateGoal(double targetValue) async {
     print('DashboardScreen::updateGoal INI');
 
+    String updatedAt = DateTime.now().toIso8601String();
+    print('targetValue: $targetValue, userId: $userId, updatedAt: $updatedAt');
+
     try {
-      await supabase
-          .from('user_goal')
-          .update({'target_value': targetValue}).eq('user_id', userId);
+      await supabase.from('user_goal').update({
+        'target_value': targetValue,
+        'updated_at': updatedAt,
+      }).eq('user_id', userId);
 
       setState(() {
         goalTargetValue = targetValue;
@@ -489,95 +494,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return (price - extraCost) * (userPercentage / 100);
   }
 
-  Widget lastAppointmentCard(Map<String, dynamic> consulta) {
-    final patientName = consulta['patient_name'] ?? 'N/A';
-    final clinicName = consulta['clinic']['name'] ?? 'N/A';
-    final appointmentDate =
-        DateTime.parse(consulta['appointment_date']).toLocal();
-    final price = (consulta['price'] as num).toDouble();
-    final extraCost = (consulta['extra_cost'] as num?)?.toDouble() ?? 0.0;
-    final userPercentage = consulta['user_percentage'] as int? ?? 100;
-    final valorLiquido = calcularValorLiquido(price, extraCost, userPercentage);
-
-    return Material(
-      color: Colors.white,
-      elevation: 2,
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.accentColor.withOpacity(0.1),
-              child: const Icon(Icons.event_note, color: AppColors.accentColor),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Última consulta',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.accentColor,
-                    ),
-                    softWrap: false,
-                  ),
-                  Text(
-                    patientName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.primaryText,
-                    ),
-                  ),
-                  Text(
-                    clinicName,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.secondaryText,
-                    ),
-                  ),
-                  Text(
-                    DateFormat('dd-MM-yyyy').format(appointmentDate),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: AppColors.secondaryText,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '${price.toStringAsFixed(2)} €',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryText,
-                  ),
-                ),
-                Text(
-                  '${valorLiquido.toStringAsFixed(2)} €',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.secondaryText,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -600,7 +516,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       ),
                     ),
                   ),
-                  // Botões circulares
+                  // Circular buttons for navigation
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
