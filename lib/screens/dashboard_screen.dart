@@ -20,7 +20,11 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final SupabaseClient supabase = Supabase.instance.client;
+  String userName = "";
+  String userEmail = "";
   String userId = "";
+  String phoneNumber = "";
+
   bool isLoading =
       true; // Flag to indicate if the data is being loaded from the database
   // Dashboard data
@@ -43,9 +47,37 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   void initState() {
+    print('DashboardScreen::initState INI');
     super.initState();
-    userId = supabase.auth.currentUser!.id;
+
+    initializeUserData();
     loadDashboardData();
+    print('DashboardScreen::initState END ');
+  }
+
+  Future<void> initializeUserData() async {
+    print('DashboardScreen::_initializeUserData INI');
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      // Certifique-se de que os detalhes do usuário são carregados no AuthService
+      await AuthService.instance
+          .loadUserDetails(AuthService.instance.currentUser()?.id ?? "");
+
+      setState(() {
+        userName = AuthService.instance.userName ?? "Usuário";
+        userEmail = AuthService.instance.userEmail ?? "Sem email";
+        userId = AuthService.instance.currentUser()?.id ?? "";
+        phoneNumber = AuthService.instance.userPhone ?? "Sem telefone";
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Erro ao carregar dados do utilizador: $e');
+    }
+
+    print('DashboardScreen::_initializeUserData END');
   }
 
   Future<void> loadDashboardData() async {

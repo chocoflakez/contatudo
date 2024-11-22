@@ -2,7 +2,6 @@ import 'package:contatudo/app_config.dart';
 import 'package:contatudo/screens/login_screen.dart';
 import 'package:contatudo/widgets/my_main_appbar.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:contatudo/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -11,7 +10,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String fullName = "";
+  // Flag to indicate if the data is being loaded from the database
+  bool isLoading = true;
+  String userName = "";
+  String userEmail = "";
+  String userId = "";
   String phoneNumber = "";
 
   @override
@@ -22,31 +25,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> fetchUserProfile() async {
     print('ProfileScreen::fetchUserProfile INI');
+
+    setState(() {
+      isLoading = true;
+    });
+
     try {
-      final supabase = Supabase.instance.client;
-      final userId = supabase.auth.currentUser?.id;
+      // Certifique-se de que os detalhes do usuário são carregados no AuthService
+      await AuthService.instance
+          .loadUserDetails(AuthService.instance.currentUser()?.id ?? "");
 
-      if (userId != null) {
-        final response =
-            await supabase.from('user').select().eq('id', userId).maybeSingle();
-
-        if (response != null) {
-          setState(() {
-            fullName = response['name'] ?? "Nome não disponível";
-            phoneNumber = response['phone'] ?? "Telefone não disponível";
-          });
-        } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text("Perfil não encontrado")));
-        }
-      }
-
-      print('ProfileScreen::fetchUserProfile END');
-    } catch (error) {
-      print('Error: $error');
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Erro ao carregar perfil: $error")));
+      setState(() {
+        userName = AuthService.instance.userName ?? "Usuário";
+        userEmail = AuthService.instance.userEmail ?? "Sem email";
+        userId = AuthService.instance.currentUser()?.id ?? "";
+        phoneNumber = AuthService.instance.userPhone ?? "Sem telefone";
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Erro ao carregar dados do utilizador: $e');
     }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    print('ProfileScreen::fetchUserProfile END');
   }
 
   Future<void> confirmSignOut() async {
@@ -118,12 +122,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Full Name: $fullName", style: TextStyle(fontSize: 18)),
-            Text("Phone Number: $phoneNumber", style: TextStyle(fontSize: 18)),
-            Text("Email: ${Supabase.instance.client.auth.currentUser?.email}",
-                style: TextStyle(fontSize: 18)),
-            Text("User ID: ${Supabase.instance.client.auth.currentUser?.id}",
-                style: TextStyle(fontSize: 18)),
+            Text("Full Name: $userName", style: TextStyle(fontSize: 18)),
+            Text("Phone Number: $phoneNumber ", style: TextStyle(fontSize: 18)),
+            Text("Email: $userEmail", style: TextStyle(fontSize: 18)),
+            Text("User ID: $userId", style: TextStyle(fontSize: 18)),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: confirmSignOut,

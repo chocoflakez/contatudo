@@ -42,7 +42,7 @@ class AuthService {
 
       if (response.user != null) {
         // Load user details
-        await _loadUserDetails(response.user!.id);
+        await loadUserDetails(response.user!.id);
         return true; // Login successful
       } else {
         return false; // Login failed
@@ -97,7 +97,7 @@ class AuthService {
         }
 
         // Load the user details
-        await _loadUserDetails(response.user!.id);
+        await loadUserDetails(response.user!.id);
 
         return true; // Registration successful
       } else {
@@ -120,8 +120,8 @@ class AuthService {
     }
   }
 
-  // Private: Load user details from the database
-  Future<void> _loadUserDetails(String userId) async {
+  // Public: Load user details from the database
+  Future<void> loadUserDetails(String userId) async {
     try {
       final response = await _supabase
           .from('user')
