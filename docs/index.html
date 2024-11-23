@@ -58,10 +58,11 @@
     // Captura o parâmetro "code" da URL
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
-
+  
     if (code) {
       // Atualiza o botão de link com o código
       document.getElementById('resetLink').href = `https://chocoflakez.github.io/contatudo/?code=${code}`;
+      document.querySelector('.container').innerHTML += `<p>Debug: Código capturado - ${code}</p>`;
     } else {
       document.querySelector('.container').innerHTML = `
         <h1>Erro</h1>
@@ -69,5 +70,6 @@
       `;
     }
   </script>
+  
 </body>
 </html>
