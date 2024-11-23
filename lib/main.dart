@@ -1,4 +1,4 @@
-import 'package:contatudo/screens/reset_password_screen.dart';
+import 'package:contatudo/screens/email_input_screen.dart';
 import 'package:contatudo/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -45,7 +45,13 @@ class MyApp extends StatelessWidget {
     // Verifica se a URL contém o parâmetro `code` para reset de senha
     if (uri.queryParameters.containsKey('code')) {
       final code = uri.queryParameters['code'];
-      return ResetPasswordScreen(code: code); // Redireciona para reset
+
+      print('Code: $code');
+
+      // Solicita o email antes de redirecionar para a tela de reset
+      return EmailInputScreen(
+        code: code,
+      );
     }
 
     // Caso contrário, continua com o fluxo normal

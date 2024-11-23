@@ -3,19 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password</title>
+    <title>Redefinição de Senha</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            padding: 20px 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .code-box {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin: 10px 0;
+            word-wrap: break-word;
+        }
+        a {
+            color: #00c6ff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
 </head>
 <body>
-    <h2>Redefinição de Senha</h2>
-    <p>O link de redefinição de senha está funcionando!</p>
-    <p>Você foi redirecionado para: <span id="reset-link"></span></p>
+    <div class="container">
+        <h1>Redefinição de Senha</h1>
+        <p>Utilize este link para redefinir a sua senha:</p>
+        <div class="code-box" id="reset-link">
+            Código não encontrado.
+        </div>
+        <p>Se não reconhece esta solicitação, ignore este e-mail ou entre em contacto com o suporte.</p>
+        <footer>
+            <p>&copy; 2024 ContaTudo. Todos os direitos reservados.</p>
+        </footer>
+    </div>
     <script>
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         if (code) {
-            document.getElementById('reset-link').textContent = `Código: ${code}`;
-        } else {
-            document.getElementById('reset-link').textContent = "Nenhum código encontrado.";
+            const resetLink = `Este é o código para redefinir sua senha: ${code}`;
+            document.getElementById('reset-link').textContent = resetLink;
         }
     </script>
 </body>
