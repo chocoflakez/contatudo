@@ -9,40 +9,45 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #6a11cb, #2575fc);
-            color: #fff;
+            background-color: rgb(244, 247, 248); /* AppColors.background */
+            color: black; /* AppColors.primaryText */
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
         .container {
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: white; /* AppColors.cardColor */
+            border: 1px solid lightgrey; /* Subtle border for elegance */
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-            padding: 20px 40px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
             text-align: center;
             max-width: 400px;
-            width: 100%;
+            width: 90%;
         }
         h1 {
             font-size: 1.8rem;
+            color: rgb(0, 122, 255); /* AppColors.accentColor */
             margin-bottom: 20px;
         }
         p {
             font-size: 1rem;
+            color: grey; /* AppColors.secondaryText */
             margin-bottom: 10px;
         }
         .code-box {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgb(244, 247, 248); /* AppColors.background */
             padding: 10px;
             border-radius: 5px;
             font-size: 1rem;
-            margin: 10px 0;
+            margin: 15px 0;
             word-wrap: break-word;
+            color: black; /* AppColors.primaryText */
+            border: 1px solid lightgrey;
         }
         a {
-            color: #00c6ff;
+            color: rgb(0, 122, 255); /* AppColors.accentColor */
             text-decoration: none;
             font-weight: bold;
         }
@@ -52,18 +57,18 @@
         footer {
             margin-top: 20px;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.8);
+            color: grey; /* AppColors.secondaryText */
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Redefinição de Senha</h1>
-        <p>Utilize este link para redefinir a sua senha:</p>
+        <p>Clique no link abaixo para redefinir a sua senha:</p>
         <div class="code-box" id="reset-link">
             Código não encontrado.
         </div>
-        <p>Se não reconhece esta solicitação, ignore este e-mail ou entre em contacto com o suporte.</p>
+        <p>Se não foi você que solicitou, ignore este e-mail ou entre em contacto com o suporte.</p>
         <footer>
             <p>&copy; 2024 ContaTudo. Todos os direitos reservados.</p>
         </footer>
