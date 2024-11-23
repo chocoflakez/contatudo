@@ -57,18 +57,20 @@
   <script>
     // Captura o parâmetro "code" da URL
     const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-  
-    if (code) {
-      // Atualiza o botão de link com o código
-      document.getElementById('resetLink').href = `https://chocoflakez.github.io/contatudo/?code=${code}`;
-      document.querySelector('.container').innerHTML += `<p>Debug: Código capturado - ${code}</p>`;
-    } else {
-      document.querySelector('.container').innerHTML = `
-        <h1>Erro</h1>
-        <p>O código de redefinição de senha não foi encontrado. Verifique o link recebido no email.</p>
-      `;
-    }
+const code = urlParams.get('code');
+
+if (code) {
+  console.log('Debug: Código capturado -', code);
+
+  // Redireciona para o aplicativo Flutter
+  window.location.href = `https://chocoflakez.github.io/contatudo/?code=${code}`;
+} else {
+  document.querySelector('.container').innerHTML = `
+    <h1>Erro</h1>
+    <p>O código de redefinição de senha não foi encontrado. Verifique o link recebido no email.</p>
+  `;
+}
+
   </script>
   
 </body>

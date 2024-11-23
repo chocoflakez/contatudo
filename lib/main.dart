@@ -26,10 +26,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      supportedLocales: [
+      supportedLocales: const [
         Locale('pt', 'PT'), // Adiciona suporte para Português de Portugal
       ],
-      localizationsDelegates: [
+      localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
@@ -55,6 +55,6 @@ class MyApp extends StatelessWidget {
     }
 
     // Caso contrário, continua com o fluxo normal
-    return SplashScreen();
+    return const SplashScreen();
   }
 }
