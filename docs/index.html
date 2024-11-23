@@ -1,85 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redefinição de Senha</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: rgb(244, 247, 248); /* AppColors.background */
-            color: black; /* AppColors.primaryText */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: white; /* AppColors.cardColor */
-            border: 1px solid lightgrey; /* Subtle border for elegance */
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 30px;
-            text-align: center;
-            max-width: 400px;
-            width: 90%;
-        }
-        h1 {
-            font-size: 1.8rem;
-            color: rgb(0, 122, 255); /* AppColors.accentColor */
-            margin-bottom: 20px;
-        }
-        p {
-            font-size: 1rem;
-            color: grey; /* AppColors.secondaryText */
-            margin-bottom: 10px;
-        }
-        .code-box {
-            background: rgb(244, 247, 248); /* AppColors.background */
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 1rem;
-            margin: 15px 0;
-            word-wrap: break-word;
-            color: black; /* AppColors.primaryText */
-            border: 1px solid lightgrey;
-        }
-        a {
-            color: rgb(0, 122, 255); /* AppColors.accentColor */
-            text-decoration: none;
-            font-weight: bold;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-        footer {
-            margin-top: 20px;
-            font-size: 0.8rem;
-            color: grey; /* AppColors.secondaryText */
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redefinir Senha - ContaTudo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #F4F7F8;
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+    h1 {
+      color: #007BFF;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+    p {
+      font-size: 16px;
+      margin-bottom: 24px;
+    }
+    a {
+      display: inline-block;
+      background-color: #007BFF;
+      color: #fff;
+      text-decoration: none;
+      padding: 12px 20px;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    a:hover {
+      background-color: #0056b3;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Redefinição de Senha</h1>
-        <p>Clique no link abaixo para redefinir a sua senha:</p>
-        <div class="code-box" id="reset-link">
-            Código não encontrado.
-        </div>
-        <p>Se não foi você que solicitou, ignore este e-mail ou entre em contacto com o suporte.</p>
-        <footer>
-            <p>&copy; 2024 ContaTudo. Todos os direitos reservados.</p>
-        </footer>
-    </div>
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const code = params.get('code');
-        if (code) {
-            const resetLink = `Este é o código para redefinir sua senha: ${code}`;
-            document.getElementById('reset-link').textContent = resetLink;
-        }
-    </script>
+  <div class="container">
+    <h1>Redefinir Senha</h1>
+    <p>Clique no botão abaixo para continuar redefinindo sua senha:</p>
+    <!-- O link inclui o parâmetro de código -->
+    <a id="resetLink" href="#">Redefinir Senha</a>
+  </div>
+  <script>
+    // Captura o parâmetro "code" da URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      // Atualiza o botão de link com o código
+      document.getElementById('resetLink').href = `myapp://resetpassword?code=${code}`;
+    } else {
+      document.querySelector('.container').innerHTML = `
+        <h1>Erro</h1>
+        <p>O código de redefinição de senha não foi encontrado. Verifique o link recebido no email.</p>
+      `;
+    }
+  </script>
 </body>
 </html>
