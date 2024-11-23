@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final success = await AuthService.instance.resetPassword(email);
+      final success = await AuthService.instance.sendResetPassword(email);
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

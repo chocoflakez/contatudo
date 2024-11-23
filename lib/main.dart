@@ -1,3 +1,4 @@
+import 'package:contatudo/screens/reset_password_screen.dart';
 import 'package:contatudo/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -33,8 +34,21 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: SplashScreen(),
+      home: _handleDynamicLink(),
       debugShowCheckedModeBanner: false,
     );
+  }
+
+  Widget _handleDynamicLink() {
+    final uri = Uri.base;
+
+    // Verifica se a URL contém o parâmetro `code` para reset de senha
+    if (uri.queryParameters.containsKey('code')) {
+      final code = uri.queryParameters['code'];
+      return ResetPasswordScreen(code: code); // Redireciona para reset
+    }
+
+    // Caso contrário, continua com o fluxo normal
+    return SplashScreen();
   }
 }

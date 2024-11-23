@@ -54,16 +54,6 @@ class AuthService {
   }
 
   // Logout the user
-  Future<void> logout() async {
-    try {
-      await _supabase.auth.signOut();
-      _clearUserDetails(); // Clear stored user details
-    } catch (e) {
-      print('Erro no logout: $e');
-    }
-  }
-
-  // Logout the user
   Future<bool> signOut() async {
     try {
       await _supabase.auth.signOut();
@@ -110,12 +100,15 @@ class AuthService {
   }
 
   // Reset the password for a given email
-  Future<bool> resetPassword(String email) async {
+  Future<bool> sendResetPassword(String email) async {
+    print('AuthService::sendResetPassword INI');
     try {
       await _supabase.auth.resetPasswordForEmail(email);
+      print('AuthService::sendResetPassword END');
       return true; // Reset email sent successfully
     } catch (e) {
       print('Erro ao solicitar reset de senha: $e');
+      print('AuthService::sendResetPassword END');
       return false; // Reset email failed
     }
   }
