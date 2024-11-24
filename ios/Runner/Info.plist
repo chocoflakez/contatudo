@@ -46,16 +46,18 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>CFBundleURLTypes</key>
+	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.example.contatudo</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>https</string>
+				<string>contatudo</string>
 			</array>
-			<key>CFBundleURLName</key>
-			<string>chocoflakez.github.io</string>
 		</dict>
 	</array>
+
 
 </dict>
 </plist>

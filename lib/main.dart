@@ -1,6 +1,7 @@
 import 'package:contatudo/screens/email_input_screen.dart';
 import 'package:contatudo/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -18,7 +19,19 @@ void main() async {
 
 final supabase = Supabase.instance.client;
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String? _code;
+
+  initState() {
+    super.initState();
+    handleDeepLink();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -34,9 +47,25 @@ class MyApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      home: _handleDynamicLink(),
+      home: _code == null
+          ? SplashScreen()
+          : EmailInputScreen(code: _code!), // Redireciona para a tela correta
       debugShowCheckedModeBanner: false,
     );
+  }
+
+  void handleDeepLink() {
+    // Escuta deep links quando o app está aberto
+    SystemChannels.lifecycle.setMessageHandler((message) async {
+      final uri = Uri.base; // Captura a URI
+      if (uri.queryParameters.containsKey('code')) {
+        setState(() {
+          _code = uri.queryParameters['code'];
+        });
+        print("Deep link capturado: $_code");
+      }
+      return;
+    });
   }
 
   Widget _handleDynamicLink() {
