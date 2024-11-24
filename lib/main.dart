@@ -1,10 +1,8 @@
 import 'package:contatudo/screens/email_input_screen.dart';
 import 'package:contatudo/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:uni_links/uni_links.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,9 +26,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   String? _code;
 
-  initState() {
+  @override
+  void initState() {
     super.initState();
-    _initializeDeepLink();
+    _handleInitialUri();
   }
 
   @override
@@ -55,23 +54,22 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  void _initializeDeepLink() async {
+  Future<void> _handleInitialUri() async {
     try {
-      // Captura o deep link inicial
-      final initialLink = await getInitialLink();
-      if (initialLink != null) {
-        final uri = Uri.parse(initialLink);
-        if (uri.queryParameters.containsKey('code')) {
-          setState(() {
-            _code = uri.queryParameters['code'];
-          });
-          print("Deep link captured: $_code");
-        } else {
-          print("No code found in initial link");
-        }
+      // Obtém o URI inicial do aplicativo
+      final uri = Uri.base; // Captura o URI base inicial
+      print('Initial URI: $uri');
+
+      if (uri.queryParameters.containsKey('code')) {
+        setState(() {
+          _code = uri.queryParameters['code'];
+        });
+        print("Deep link code captured: $_code");
+      } else {
+        print("No deep link code found");
       }
     } catch (e) {
-      print("Error in deep link handling: $e");
+      print("Error handling initial URI: $e");
     }
   }
 }
