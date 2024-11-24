@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
 
   initState() {
     super.initState();
-    handleDeepLink();
+    _initializeDynamicLink();
   }
 
   @override
@@ -48,42 +48,29 @@ class _MyAppState extends State<MyApp> {
         GlobalCupertinoLocalizations.delegate,
       ],
       home: _code == null
-          ? SplashScreen()
+          ? const SplashScreen()
           : EmailInputScreen(code: _code!), // Redireciona para a tela correta
       debugShowCheckedModeBanner: false,
     );
   }
 
-  void handleDeepLink() {
-    // Escuta deep links quando o app está aberto
-    SystemChannels.lifecycle.setMessageHandler((message) async {
-      final uri = Uri.base; // Captura a URI
-      if (uri.queryParameters.containsKey('code')) {
-        setState(() {
-          _code = uri.queryParameters['code'];
-        });
-        print("Deep link capturado: $_code");
+  void _initializeDeepLink() async {
+    try {
+      // Captura o deep link inicial
+      final initialLink = await getInitialLink();
+      if (initialLink != null) {
+        final uri = Uri.parse(initialLink);
+        if (uri.queryParameters.containsKey('code')) {
+          setState(() {
+            _code = uri.queryParameters['code'];
+          });
+          print("Deep link captured: $_code");
+        } else {
+          print("No code found in initial link");
+        }
       }
-      return;
-    });
-  }
-
-  Widget _handleDynamicLink() {
-    final uri = Uri.base;
-
-    // Verifica se a URL contém o parâmetro `code` para reset de senha
-    if (uri.queryParameters.containsKey('code')) {
-      final code = uri.queryParameters['code'];
-
-      print('Code: $code');
-
-      // Solicita o email antes de redirecionar para a tela de reset
-      return EmailInputScreen(
-        code: code,
-      );
+    } catch (e) {
+      print("Error in deep link handling: $e");
     }
-
-    // Caso contrário, continua com o fluxo normal
-    return const SplashScreen();
   }
 }
