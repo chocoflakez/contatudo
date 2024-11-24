@@ -20,7 +20,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> redirect() async {
     print('SplashScreen::redirect INI');
-    await Future.delayed(Duration(seconds: 0));
+    await Future.delayed(const Duration(seconds: 0));
 
     // Use AuthService to check the session
     final session = AuthService.instance.currentSession();
@@ -29,8 +29,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => DashboardScreen()));
     } else {
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => LoginScreen()));
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()));
     }
 
     print('SplashScreen::redirect END');
@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Center(
         child: CircularProgressIndicator(
           color: AppColors.accentColor,

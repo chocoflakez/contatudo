@@ -45,6 +45,10 @@
     a:hover {
       background-color: #0056b3;
     }
+    .error {
+      color: red;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
@@ -53,25 +57,30 @@
     <p>Clique no botão abaixo para continuar redefinindo sua senha:</p>
     <!-- O link inclui o parâmetro de código -->
     <a id="resetLink" href="#">Redefinir Senha</a>
+    <p class="error" id="errorMessage"></p>
   </div>
   <script>
     // Captura o parâmetro "code" da URL
     const urlParams = new URLSearchParams(window.location.search);
-const code = urlParams.get('code');
+    const code = urlParams.get('code');
 
-if (code) {
-  console.log('Debug: Código capturado -', code);
+    if (code) {
+      console.log('Debug: Código capturado -', code);
 
-  // Redireciona para o aplicativo Flutter
-  window.location.href = `https://chocoflakez.github.io/contatudo/?code=${code}`;
-} else {
-  document.querySelector('.container').innerHTML = `
-    <h1>Erro</h1>
-    <p>O código de redefinição de senha não foi encontrado. Verifique o link recebido no email.</p>
-  `;
-}
+      // Atualiza o botão de link com o código
+      const resetLink = `https://chocoflakez.github.io/contatudo/?code=${code}`;
+      document.getElementById('resetLink').href = resetLink;
 
+      // Redireciona automaticamente após 5 segundos (opcional)
+      setTimeout(() => {
+        window.location.href = resetLink;
+      }, 5000);
+    } else {
+      // Exibe mensagem de erro caso o código não seja encontrado
+      document.getElementById('errorMessage').textContent =
+        'O código de redefinição de senha não foi encontrado. Verifique o link recebido no email.';
+      console.error('Debug: Código não encontrado na URL');
+    }
   </script>
-  
 </body>
 </html>
