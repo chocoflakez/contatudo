@@ -2,6 +2,7 @@ import 'package:contatudo/app_config.dart';
 import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/screens/dashboard_screen.dart';
 import 'package:contatudo/screens/register_screen.dart';
+import 'package:contatudo/screens/recover_password_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,6 +16,8 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
+  bool isLoading = false;
+  String? errorMessage;
 
   Future<void> signIn() async {
     print('LoginScreen::signIn INI');
@@ -22,11 +25,16 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Por favor, preencha todos os campos.")),
-      );
+      setState(() {
+        errorMessage = "Por favor, preencha todos os campos.";
+      });
       return;
     }
+
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
 
     final success = await AuthService.instance.login(email, password);
 
@@ -39,10 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (context) => DashboardScreen()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Erro ao fazer login. Verifique suas credenciais."),
-      ));
+      setState(() {
+        errorMessage = "Erro ao fazer login. Verifique suas credenciais.";
+      });
     }
+
+    setState(() {
+      isLoading = false;
+    });
+
     print('LoginScreen::signIn END');
   }
 
@@ -51,33 +64,55 @@ class _LoginScreenState extends State<LoginScreen> {
     final email = emailController.text.trim();
 
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Por favor, insira seu e-mail para recuperação."),
-      ));
+      setState(() {
+        errorMessage = "Por favor, insira seu e-mail para recuperação.";
+      });
       return;
     }
+
+    setState(() {
+      isLoading = true;
+      errorMessage = null;
+    });
 
     try {
       final success = await AuthService.instance.sendResetPassword(email);
 
       if (success) {
+        setState(() {
+          errorMessage = null;
+        });
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           content: Text(
               "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
         ));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Erro ao enviar o e-mail de recuperação."),
-        ));
+        setState(() {
+          errorMessage = "Erro ao enviar o e-mail de recuperação.";
+        });
       }
-
-      print('LoginScreen::resetPassword END');
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text("Erro: $error"),
-      ));
-      print('LoginScreen::resetPassword END');
+      setState(() {
+        errorMessage = "Erro ao enviar e-mail: $error";
+      });
     }
+
+    setState(() {
+      isLoading = false;
+    });
+
+    print('LoginScreen::resetPassword END');
+  }
+
+  Widget buildErrorMessage() {
+    if (errorMessage == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(
+        errorMessage!,
+        style: const TextStyle(color: Colors.red),
+      ),
+    );
   }
 
   Widget buildTextField({
@@ -155,6 +190,7 @@ class _LoginScreenState extends State<LoginScreen> {
             const SizedBox(height: 20),
             Image.asset('assets/images/logo1.png', height: 100),
             const SizedBox(height: 20),
+            buildErrorMessage(),
             buildTextField(
               controller: emailController,
               label: 'Email',
@@ -175,18 +211,20 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
-              onPressed: signIn,
+              onPressed: isLoading ? null : signIn,
               icon: const Icon(
                 Icons.login,
                 color: Colors.white,
               ),
-              label: const Text(
-                'Entrar',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
+              label: isLoading
+                  ? const CircularProgressIndicator()
+                  : const Text(
+                      'Entrar',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentColor,
                 shape: RoundedRectangleBorder(
@@ -199,7 +237,16 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             const SizedBox(height: 10),
             TextButton(
-              onPressed: resetPassword,
+              onPressed: isLoading
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RecoverPasswordScreen(),
+                        ),
+                      );
+                    },
               child: const Text(
                 "Esqueceu a senha?",
                 style: TextStyle(color: AppColors.accentColor),

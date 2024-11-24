@@ -35,6 +35,7 @@ class AuthService {
 
   // Login the user with Email and Password
   Future<bool> login(String email, String password) async {
+    print('AuthService::login INI');
     try {
       // Perform login
       final response = await _supabase.auth
@@ -43,24 +44,30 @@ class AuthService {
       if (response.user != null) {
         // Load user details
         await loadUserDetails(response.user!.id);
+        print('AuthService::login END');
         return true; // Login successful
       } else {
+        print('AuthService::login END');
         return false; // Login failed
       }
     } catch (e) {
-      print('Erro no login: $e');
+      print('Error in login: $e');
+      print('AuthService::login END');
       return false;
     }
   }
 
   // Logout the user
   Future<bool> signOut() async {
+    print('AuthService::signOut INI');
     try {
       await _supabase.auth.signOut();
       _clearUserDetails(); // Clear stored user details
+      print('AuthService::signOut END');
       return true; // Sign out successful
     } catch (e) {
-      print('Erro no logout: $e');
+      print('Error in logout: $e');
+      print('AuthService::signOut END');
       return false; // Sign out failed
     }
   }
@@ -70,6 +77,7 @@ class AuthService {
       {required String email,
       required String password,
       Map<String, dynamic>? additionalData}) async {
+    print('AuthService::register INI');
     try {
       // Step 1: Register the user
       final response =
@@ -88,9 +96,10 @@ class AuthService {
 
         // Load the user details
         await loadUserDetails(response.user!.id);
-
+        print('AuthService::register END');
         return true; // Registration successful
       } else {
+        print('AuthService::register END');
         return false; // Registration failed
       }
     } catch (e) {
@@ -115,6 +124,7 @@ class AuthService {
 
   // Public: Load user details from the database
   Future<void> loadUserDetails(String userId) async {
+    print('AuthService::loadUserDetails INI');
     try {
       final response = await _supabase
           .from('user')
@@ -127,15 +137,19 @@ class AuthService {
         _phone = response['phone'] as String?;
         _email = response['email'] as String?;
       }
+      print('AuthService::loadUserDetails END');
     } catch (e) {
-      print('Erro ao carregar detalhes do utilizador: $e');
+      print('Error loading user details: $e');
+      print('AuthService::loadUserDetails END');
     }
   }
 
   // Private: Clear user details on logout
   void _clearUserDetails() {
+    print('AuthService::_clearUserDetails INI');
     _name = null;
     _phone = null;
     _email = null;
+    print('AuthService::_clearUserDetails END');
   }
 }

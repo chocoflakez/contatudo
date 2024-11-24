@@ -1,81 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/app_config.dart';
-import 'package:uni_links/uni_links.dart';
-import 'dart:async';
+import 'package:contatudo/screens/reset_password_screen.dart';
 
-class ResetPasswordScreen extends StatefulWidget {
-  final String email;
-
-  const ResetPasswordScreen({required this.email, super.key});
+class RecoverPasswordScreen extends StatefulWidget {
+  const RecoverPasswordScreen({super.key});
 
   @override
-  State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
+  State<RecoverPasswordScreen> createState() => _RecoverPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final TextEditingController newPasswordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
+class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
+  final TextEditingController emailController = TextEditingController();
   String? errorMessage;
   bool isLoading = false;
-  String? resetCode;
 
-  @override
-  void initState() {
-    super.initState();
-    _initUniLinks();
-  }
+  Future<void> submitEmail() async {
+    final email = emailController.text.trim();
 
-  Future<void> _initUniLinks() async {
-    try {
-      final initialLink = await getInitialLink();
-      if (initialLink != null) {
-        _handleDeepLink(initialLink);
-      }
-
-      linkStream.listen((String? link) {
-        if (link != null) {
-          _handleDeepLink(link);
-        }
-      }, onError: (err) {
-        print('Failed to handle deep link: $err');
-      });
-    } catch (e) {
-      print('Failed to initialize uni links: $e');
-    }
-  }
-
-  void _handleDeepLink(String link) {
-    final uri = Uri.parse(link);
-    if (uri.scheme == 'contatudo' && uri.host == 'resetpassword') {
+    if (email.isEmpty) {
       setState(() {
-        resetCode = uri.queryParameters['code'];
-      });
-    }
-  }
-
-  Future<void> resetPassword() async {
-    final newPassword = newPasswordController.text.trim();
-    final confirmPassword = confirmPasswordController.text.trim();
-
-    if (newPassword.isEmpty || confirmPassword.isEmpty) {
-      setState(() {
-        errorMessage = "Por favor, preencha todos os campos.";
-      });
-      return;
-    }
-
-    if (newPassword != confirmPassword) {
-      setState(() {
-        errorMessage = "As senhas não correspondem.";
-      });
-      return;
-    }
-
-    if (resetCode == null) {
-      setState(() {
-        errorMessage = "Código de redefinição de senha inválido.";
+        errorMessage = "Por favor, insira seu e-mail para recuperação.";
       });
       return;
     }
@@ -85,17 +30,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       errorMessage = null;
     });
 
-    final success = await AuthService.instance.sendResetPassword(resetCode!);
+    final success = await AuthService.instance.sendResetPassword(email);
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text("Senha alterada com sucesso. Faça login com a nova senha."),
-      ));
-      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ResetPasswordScreen(email: email),
+        ),
+      );
     } else {
       setState(() {
-        errorMessage = "Erro ao alterar a senha.";
+        errorMessage = "Erro ao enviar o e-mail de recuperação.";
       });
     }
 
@@ -151,7 +97,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Alterar senha'),
+        title: const Text('Recuperar senha'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -159,23 +105,15 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Digite a nova senha.',
+              'Digite o seu email para recuperar a senha.',
               style: TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 16),
             buildTextField(
-              controller: newPasswordController,
-              label: 'Nova Senha',
+              controller: emailController,
+              label: 'Email',
               isRequired: true,
-              icon: Icons.lock,
-              obscureText: true,
-            ),
-            buildTextField(
-              controller: confirmPasswordController,
-              label: 'Confirmar Nova Senha',
-              isRequired: true,
-              icon: Icons.lock,
-              obscureText: true,
+              icon: Icons.email,
             ),
             const SizedBox(height: 16),
             if (errorMessage != null)
@@ -185,10 +123,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
               ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: isLoading ? null : resetPassword,
+              onPressed: isLoading ? null : submitEmail,
               child: isLoading
                   ? const CircularProgressIndicator()
-                  : const Text('Alterar senha'),
+                  : const Text('Enviar e-mail'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentColor,
                 shape: RoundedRectangleBorder(
