@@ -67,14 +67,16 @@
     if (code) {
       console.log('Debug: Código capturado -', code);
 
-      // Atualiza o botão de link com o código
-      const resetLink = `https://chocoflakez.github.io/contatudo/?code=${code}`;
+      // Redireciona para o aplicativo Flutter via deep link
+      const resetLink = `contatudo://resetpassword?code=${code}`;
       document.getElementById('resetLink').href = resetLink;
 
-      // Redireciona automaticamente após 5 segundos (opcional)
-      setTimeout(() => {
+      // Adiciona comportamento do botão
+      document.getElementById('resetLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Debug: Tentando redirecionar para o app');
         window.location.href = resetLink;
-      }, 5000);
+      });
     } else {
       // Exibe mensagem de erro caso o código não seja encontrado
       document.getElementById('errorMessage').textContent =
