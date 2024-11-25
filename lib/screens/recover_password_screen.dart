@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/app_config.dart';
-import 'package:contatudo/screens/reset_password_screen.dart';
 
 class RecoverPasswordScreen extends StatefulWidget {
   const RecoverPasswordScreen({super.key});
@@ -16,6 +15,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
   bool isLoading = false;
 
   Future<void> submitEmail() async {
+    print('RecoverPasswordScreen::submitEmail INI');
     final email = emailController.text.trim();
 
     if (email.isEmpty) {
@@ -33,12 +33,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
     final success = await AuthService.instance.sendResetPassword(email);
 
     if (success) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ResetPasswordScreen(email: email),
-        ),
-      );
+      print('RecoverPasswordScreen::submitEmail success!');
     } else {
       setState(() {
         errorMessage = "Erro ao enviar o e-mail de recuperação.";
@@ -48,6 +43,7 @@ class _RecoverPasswordScreenState extends State<RecoverPasswordScreen> {
     setState(() {
       isLoading = false;
     });
+    print('RecoverPasswordScreen::submitEmail END');
   }
 
   Widget buildTextField({

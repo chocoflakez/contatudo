@@ -122,6 +122,22 @@ class AuthService {
     }
   }
 
+  // Reset the password using the reset code
+  Future<bool> resetPassword(String resetCode, String newPassword) async {
+    print('AuthService::resetPassword INI');
+    try {
+      final response = await _supabase.auth.updateUser(
+        UserAttributes(password: newPassword),
+      );
+      print('AuthService::resetPassword END');
+      return response.user != null; // Password reset successful
+    } catch (e) {
+      print('Erro ao resetar senha: $e');
+      print('AuthService::resetPassword END');
+      return false; // Password reset failed
+    }
+  }
+
   // Public: Load user details from the database
   Future<void> loadUserDetails(String userId) async {
     print('AuthService::loadUserDetails INI');

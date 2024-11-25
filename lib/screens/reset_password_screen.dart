@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/app_config.dart';
-import 'package:uni_links/uni_links.dart';
-import 'dart:async';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
+  final String resetCode;
 
-  const ResetPasswordScreen({required this.email, super.key});
+  const ResetPasswordScreen(
+      {required this.email, required this.resetCode, super.key});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -19,40 +19,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       TextEditingController();
   String? errorMessage;
   bool isLoading = false;
-  String? resetCode;
 
   @override
   void initState() {
     super.initState();
-    _initUniLinks();
-  }
-
-  Future<void> _initUniLinks() async {
-    try {
-      final initialLink = await getInitialLink();
-      if (initialLink != null) {
-        _handleDeepLink(initialLink);
-      }
-
-      linkStream.listen((String? link) {
-        if (link != null) {
-          _handleDeepLink(link);
-        }
-      }, onError: (err) {
-        print('Failed to handle deep link: $err');
-      });
-    } catch (e) {
-      print('Failed to initialize uni links: $e');
-    }
-  }
-
-  void _handleDeepLink(String link) {
-    final uri = Uri.parse(link);
-    if (uri.scheme == 'contatudo' && uri.host == 'resetpassword') {
-      setState(() {
-        resetCode = uri.queryParameters['code'];
-      });
-    }
   }
 
   Future<void> resetPassword() async {
@@ -73,24 +43,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return;
     }
 
-    if (resetCode == null) {
-      setState(() {
-        errorMessage = "Código de redefinição de senha inválido.";
-      });
-      return;
-    }
-
     setState(() {
       isLoading = true;
       errorMessage = null;
     });
 
-    final success = await AuthService.instance.sendResetPassword(resetCode!);
+    final success =
+        await AuthService.instance.resetPassword(widget.resetCode, newPassword);
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content:
-            Text("Senha alterada com sucesso. Faça login com a nova senha."),
+        content: Text("Senha alterada com sucesso!"),
       ));
       Navigator.pop(context);
     } else {

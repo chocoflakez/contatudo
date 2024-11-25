@@ -1,7 +1,10 @@
 import 'package:contatudo/screens/splash_screen.dart';
+import 'package:contatudo/screens/reset_password_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,8 +24,39 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  initState() {
+  StreamSubscription? _sub;
+
+  @override
+  void initState() {
     super.initState();
+    _handleIncomingLinks();
+  }
+
+  void _handleIncomingLinks() {
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null && uri.host == 'resetpassword') {
+        final resetCode = uri.queryParameters['code'];
+        if (resetCode != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ResetPasswordScreen(
+                email: '', // You might need to pass the email here
+                resetCode: resetCode,
+              ),
+            ),
+          );
+        }
+      }
+    }, onError: (Object err) {
+      // Handle error
+    });
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   @override
