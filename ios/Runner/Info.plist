@@ -47,13 +47,14 @@
 	<true/>
 	<key>CFBundleURLTypes</key>
 	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>contatudo</string>
-			</array>
-		</dict>
+	<dict>
+		<key>CFBundleURLSchemes</key>
+		<array>
+		<string>contatudo</string>
+		</array>
+	</dict>
 	</array>
+
 
 
 

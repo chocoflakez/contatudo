@@ -59,51 +59,6 @@ class _LoginScreenState extends State<LoginScreen> {
     print('LoginScreen::signIn END');
   }
 
-  Future<void> resetPassword() async {
-    print('LoginScreen::resetPassword INI');
-    final email = emailController.text.trim();
-
-    if (email.isEmpty) {
-      setState(() {
-        errorMessage = "Por favor, insira seu e-mail para recuperação.";
-      });
-      return;
-    }
-
-    setState(() {
-      isLoading = true;
-      errorMessage = null;
-    });
-
-    try {
-      final success = await AuthService.instance.sendResetPassword(email);
-
-      if (success) {
-        setState(() {
-          errorMessage = null;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text(
-              "E-mail de recuperação enviado. Verifique sua caixa de entrada."),
-        ));
-      } else {
-        setState(() {
-          errorMessage = "Erro ao enviar o e-mail de recuperação.";
-        });
-      }
-    } catch (error) {
-      setState(() {
-        errorMessage = "Erro ao enviar e-mail: $error";
-      });
-    }
-
-    setState(() {
-      isLoading = false;
-    });
-
-    print('LoginScreen::resetPassword END');
-  }
-
   Widget buildErrorMessage() {
     if (errorMessage == null) return const SizedBox.shrink();
     return Padding(

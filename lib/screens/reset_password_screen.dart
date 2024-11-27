@@ -1,3 +1,4 @@
+import 'package:contatudo/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:contatudo/auth_service.dart';
 import 'package:contatudo/app_config.dart';
@@ -26,6 +27,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Future<void> resetPassword() async {
+    print('ResetPasswordScreen::resetPassword INI');
     final newPassword = newPasswordController.text.trim();
     final confirmPassword = confirmPasswordController.text.trim();
 
@@ -48,17 +50,31 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       errorMessage = null;
     });
 
-    final success =
-        await AuthService.instance.resetPassword(widget.resetCode, newPassword);
+    try {
+      final success = await AuthService.instance
+          .resetPassword(widget.resetCode, newPassword);
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Senha alterada com sucesso!"),
-      ));
-      Navigator.pop(context);
-    } else {
+      if (success) {
+        print('resetPassword success!');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text("Senha alterada com sucesso!"),
+          ));
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(),
+            ),
+          );
+        }
+      } else {
+        setState(() {
+          errorMessage = "Erro ao alterar a senha.";
+        });
+      }
+    } catch (e) {
       setState(() {
-        errorMessage = "Erro ao alterar a senha.";
+        errorMessage =
+            "Ocorreu um erro inesperado. Por favor, tente novamente.";
       });
     }
 
@@ -150,7 +166,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             ElevatedButton(
               onPressed: isLoading ? null : resetPassword,
               child: isLoading
-                  ? const CircularProgressIndicator()
+                  ? const CircularProgressIndicator(color: Colors.white)
                   : const Text('Alterar senha'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentColor,
