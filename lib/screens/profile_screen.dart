@@ -47,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     setState(() {
-      isLoading = true;
+      isLoading = false;
     });
 
     print('ProfileScreen::fetchUserProfile END');
@@ -112,6 +112,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
     print('ProfileScreen::confirmSignOut END');
   }
 
+  Future<void> confirmDeleteAccount() async {
+    print('ProfileScreen::confirmDeleteAccount INI');
+
+    bool? confirmDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text(
+            'Confirmação de Exclusão',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.accentColor,
+            ),
+          ),
+          backgroundColor: AppColors.cardColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          content: const Text(
+              'Tem certeza de que deseja excluir sua conta? Todos os seus dados serão perdidos e não poderão ser recuperados.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancelar',
+                  style: TextStyle(color: AppColors.accentColor)),
+              onPressed: () => Navigator.of(context).pop(false),
+            ),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                elevation: 4,
+              ),
+              onPressed: () => Navigator.of(context).pop(true),
+              icon: const Icon(Icons.delete_forever,
+                  color: AppColors.accentColor),
+              label: const Text('Excluir Conta',
+                  style: TextStyle(color: AppColors.accentColor)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmDelete == true) {
+      final success = await AuthService.instance.deleteUser();
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Conta excluída com sucesso.")),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Erro ao excluir a conta.")),
+        );
+      }
+    }
+
+    print('ProfileScreen::confirmDeleteAccount END');
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,10 +186,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Full Name: $userName", style: TextStyle(fontSize: 18)),
-            Text("Phone Number: $phoneNumber ", style: TextStyle(fontSize: 18)),
-            Text("Email: $userEmail", style: TextStyle(fontSize: 18)),
-            Text("User ID: $userId", style: TextStyle(fontSize: 18)),
+            isLoading
+                ? Center(child: CircularProgressIndicator())
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Full Name: $userName",
+                          style: TextStyle(fontSize: 18)),
+                      Text("Phone Number: $phoneNumber ",
+                          style: TextStyle(fontSize: 18)),
+                      Text("Email: $userEmail", style: TextStyle(fontSize: 18)),
+                      Text("User ID: $userId", style: TextStyle(fontSize: 18)),
+                    ],
+                  ),
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: confirmSignOut,
@@ -134,6 +207,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Text('Logout', style: TextStyle(color: Colors.white)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.accentColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                minimumSize: const Size(150, 50),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: confirmDeleteAccount,
+              icon: const Icon(Icons.delete, color: Colors.white),
+              label: const Text('Excluir Conta',
+                  style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),

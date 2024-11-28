@@ -168,4 +168,45 @@ class AuthService {
     _email = null;
     print('AuthService::_clearUserDetails END');
   }
+
+// Delete the user account
+  Future<bool> deleteUser() async {
+    print('AuthService::deleteUser INI');
+    try {
+      // Obtenha o utilizador atualmente autenticado
+      final user = _supabase.auth.currentUser;
+
+      if (user != null) {
+        // Tente deletar o registro do utilizador da tabela 'user'
+        final response = await _supabase
+            .from('user')
+            .delete()
+            .eq('id', user.id)
+            .select(); // Precisamos do 'select()' para obter os dados deletados e verificar o resultado
+
+        // Verificar se o registro foi removido com sucesso
+        if (response == null || response.isEmpty) {
+          // Se não houve resposta válida ou o registro não foi encontrado
+          print('Nenhum registro foi deletado.');
+          print('AuthService::deleteUser END');
+          return false;
+        }
+
+        // Realiza o signOut depois de deletar os dados do utilizador
+        await _supabase.auth.signOut();
+        _clearUserDetails(); // Limpa os detalhes do utilizador
+
+        print('AuthService::deleteUser END');
+        return true;
+      } else {
+        print('Nenhum utilizador autenticado');
+        print('AuthService::deleteUser END');
+        return false;
+      }
+    } catch (e) {
+      print('Erro inesperado ao deletar o utilizador: $e');
+      print('AuthService::deleteUser END');
+      return false;
+    }
+  }
 }
